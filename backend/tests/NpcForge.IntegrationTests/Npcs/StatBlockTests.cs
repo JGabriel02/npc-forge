@@ -35,11 +35,16 @@ public class StatBlockTests(ApiFactory factory)
 
         var response = await client.PutAsJsonAsync($"/api/npcs/{npc.Id}/statblock", replacement);
 
-        var updated = await response.Content.ReadFromJsonAsync<NpcBody>();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(2, npc.StatBlock!.ProficiencyBonus);
-        Assert.Equal(4, updated!.StatBlock!.ProficiencyBonus);
-        Assert.Equal(["Machado Rúnico"], updated.StatBlock.Actions.Select(a => a.Name));
-        Assert.Empty(updated.StatBlock.Traits);
+
+        // Relê do banco para garantir que a substituição foi persistida, não só montada em memória.
+        var reloaded = await client.GetFromJsonAsync<NpcBody>($"/api/npcs/{npc.Id}");
+        Assert.Equal("10", reloaded!.StatBlock!.ChallengeRating);
+        Assert.Equal(4, reloaded.StatBlock.ProficiencyBonus);
+        Assert.Equal(["Machado Rúnico"], reloaded.StatBlock.Actions.Select(a => a.Name));
+        Assert.Equal(9, reloaded.StatBlock.Actions[0].AttackBonus);
+        Assert.Empty(reloaded.StatBlock.Traits);
     }
 
     [Fact]
@@ -65,6 +70,23 @@ public class StatBlockTests(ApiFactory factory)
         var response = await client.PutAsJsonAsync($"/api/npcs/{npc.Id}/statblock", body);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(30, HttpStatusCode.OK)]
+    [InlineData(31, HttpStatusCode.BadRequest)]
+    public async Task Put_TraitsCount_LimitedTo30(int count, HttpStatusCode expected)
+    {
+        var client = await factory.CreateAuthenticatedClientAsync();
+        var npc = await client.CreateNpcAsync();
+        var statBlock = NpcTestData.ValidStatBlock() with
+        {
+            Traits = Enumerable.Range(1, count).Select(i => new FeaturePayload($"Traço {i}", "...")).ToList(),
+        };
+
+        var response = await client.PutAsJsonAsync($"/api/npcs/{npc.Id}/statblock", statBlock);
+
+        Assert.Equal(expected, response.StatusCode);
     }
 
     [Theory]

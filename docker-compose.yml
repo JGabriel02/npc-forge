@@ -23,6 +23,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      # Somente para uso local: Development aplica as migrations no startup e expõe o OpenAPI sem login.
+      # Não reutilize este compose para publicar a aplicação.
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Host=postgres;Database=npcforge;Username=npcforge;Password=${POSTGRES_PASSWORD}
       Jwt__Key: ${JWT_KEY:?defina JWT_KEY no .env}

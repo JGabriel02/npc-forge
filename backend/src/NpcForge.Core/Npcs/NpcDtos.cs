@@ -33,9 +33,9 @@ public record StatBlockRequest(
     [MaxLength(NpcLimits.MediumText)] string? Skills,
     [MaxLength(NpcLimits.MediumText)] string? Senses,
     [MaxLength(NpcLimits.MediumText)] string? Languages,
-    [NoNullElements] List<StatBlockFeatureDto>? Traits,
-    [NoNullElements] List<StatBlockActionDto>? Actions,
-    [NoNullElements] List<StatBlockFeatureDto>? Reactions);
+    [NoNullElements, MaxLength(NpcLimits.StatBlockListItems)] List<StatBlockFeatureDto>? Traits,
+    [NoNullElements, MaxLength(NpcLimits.StatBlockListItems)] List<StatBlockActionDto>? Actions,
+    [NoNullElements, MaxLength(NpcLimits.StatBlockListItems)] List<StatBlockFeatureDto>? Reactions);
 
 public record AbilityModifiers(int Str, int Dex, int Con, int Int, int Wis, int Cha);
 
