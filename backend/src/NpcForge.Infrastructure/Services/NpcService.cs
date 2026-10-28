@@ -99,6 +99,36 @@ public class NpcService(AppDbContext db, TimeProvider time) : INpcService
     public async Task<bool> DeleteAsync(string userId, Guid id, CancellationToken ct)
         => await Owned(userId).Where(n => n.Id == id).ExecuteDeleteAsync(ct) > 0;
 
+    public async Task<NpcDto?> SetStatBlockAsync(
+        string userId, Guid npcId, StatBlockRequest request, CancellationToken ct)
+    {
+        var npc = await FindAsync(userId, npcId, ct);
+        if (npc is null) return null;
+
+        if (npc.StatBlock is not null)
+            db.StatBlocks.Remove(npc.StatBlock);
+        npc.StatBlock = request.ToEntity(npc.Id);
+        npc.UpdatedAt = time.GetUtcNow().UtcDateTime;
+
+        await db.SaveChangesAsync(ct);
+        return npc.ToDto();
+    }
+
+    public async Task<NpcDto?> RemoveStatBlockAsync(string userId, Guid npcId, CancellationToken ct)
+    {
+        var npc = await FindAsync(userId, npcId, ct);
+        if (npc is null) return null;
+
+        if (npc.StatBlock is not null)
+        {
+            db.StatBlocks.Remove(npc.StatBlock);
+            npc.StatBlock = null;
+            npc.UpdatedAt = time.GetUtcNow().UtcDateTime;
+            await db.SaveChangesAsync(ct);
+        }
+        return npc.ToDto();
+    }
+
     private IQueryable<Npc> Owned(string userId) => db.Npcs.Where(n => n.UserId == userId);
 
     private Task<Npc?> FindAsync(string userId, Guid id, CancellationToken ct)

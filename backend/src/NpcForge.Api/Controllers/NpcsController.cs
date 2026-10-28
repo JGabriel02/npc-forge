@@ -37,6 +37,14 @@ public class NpcsController(INpcService npcs) : ControllerBase
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         => await npcs.DeleteAsync(User.GetUserId(), id, ct) ? NoContent() : NotFound();
 
+    [HttpPut("{id:guid}/statblock")]
+    public async Task<ActionResult<NpcDto>> SetStatBlock(Guid id, StatBlockRequest request, CancellationToken ct)
+        => await npcs.SetStatBlockAsync(User.GetUserId(), id, request, ct) is { } npc ? npc : NotFound();
+
+    [HttpDelete("{id:guid}/statblock")]
+    public async Task<ActionResult<NpcDto>> RemoveStatBlock(Guid id, CancellationToken ct)
+        => await npcs.RemoveStatBlockAsync(User.GetUserId(), id, ct) is { } npc ? npc : NotFound();
+
     private ActionResult ToError(ServiceError error)
     {
         if (error == ServiceError.NotFound)
