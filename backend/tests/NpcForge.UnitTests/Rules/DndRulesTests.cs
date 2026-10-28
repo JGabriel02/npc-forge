@@ -1,0 +1,84 @@
+using NpcForge.Core.Rules;
+
+namespace NpcForge.UnitTests.Rules;
+
+public class DndRulesTests
+{
+    [Theory]
+    [InlineData(1, -5)]
+    [InlineData(8, -1)]
+    [InlineData(9, -1)]
+    [InlineData(10, 0)]
+    [InlineData(11, 0)]
+    [InlineData(12, 1)]
+    [InlineData(20, 5)]
+    [InlineData(30, 10)]
+    public void AbilityModifier_FollowsFloorRule(int score, int expected)
+        => Assert.Equal(expected, DndRules.AbilityModifier(score));
+
+    [Theory]
+    [InlineData("0", 2)]
+    [InlineData("1/8", 2)]
+    [InlineData("4", 2)]
+    [InlineData("5", 3)]
+    [InlineData("8", 3)]
+    [InlineData("9", 4)]
+    [InlineData("13", 5)]
+    [InlineData("17", 6)]
+    [InlineData("21", 7)]
+    [InlineData("25", 8)]
+    [InlineData("29", 9)]
+    [InlineData("30", 9)]
+    public void ProficiencyBonus_ByChallengeRating(string cr, int expected)
+        => Assert.Equal(expected, DndRules.ProficiencyBonus(cr));
+
+    [Fact]
+    public void ProficiencyBonus_InvalidChallengeRating_Throws()
+        => Assert.Throws<ArgumentException>(() => DndRules.ProficiencyBonus("1/3"));
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("1/8")]
+    [InlineData("1/4")]
+    [InlineData("1/2")]
+    [InlineData("1")]
+    [InlineData("30")]
+    public void IsValidChallengeRating_AcceptsOfficialValues(string cr)
+        => Assert.True(DndRules.IsValidChallengeRating(cr));
+
+    [Theory]
+    [InlineData("31")]
+    [InlineData("1/3")]
+    [InlineData("-1")]
+    [InlineData("")]
+    [InlineData("abc")]
+    [InlineData("0.5")]
+    [InlineData(null)]
+    public void IsValidChallengeRating_RejectsOtherValues(string? cr)
+        => Assert.False(DndRules.IsValidChallengeRating(cr));
+
+    [Fact]
+    public void ChallengeRatings_ListsAllOfficialValuesInOrder()
+    {
+        Assert.Equal(34, DndRules.ChallengeRatings.Count);
+        Assert.Equal(["0", "1/8", "1/4", "1/2", "1"], DndRules.ChallengeRatings.Take(5));
+        Assert.Equal("30", DndRules.ChallengeRatings[^1]);
+    }
+
+    [Theory]
+    [InlineData("4d8+4")]
+    [InlineData("1d6")]
+    [InlineData("10d10-5")]
+    public void IsValidHitDice_AcceptsDiceNotation(string hitDice)
+        => Assert.True(DndRules.IsValidHitDice(hitDice));
+
+    [Theory]
+    [InlineData("d8")]
+    [InlineData("4d")]
+    [InlineData("4d8+")]
+    [InlineData("abc")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void IsValidHitDice_RejectsInvalidNotation(string? hitDice)
+        => Assert.False(DndRules.IsValidHitDice(hitDice));
+}

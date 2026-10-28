@@ -1,0 +1,6 @@
+@NpcForge.Api_HostAddress = http://localhost:5015
+
+GET {{NpcForge.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
