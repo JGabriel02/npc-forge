@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NpcForge.Core.Campaigns;
+using NpcForge.Core.Npcs;
 using NpcForge.Infrastructure.Persistence;
 using NpcForge.Infrastructure.Services;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("Default")));
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ICampaignService, CampaignService>();
+        services.AddScoped<INpcService, NpcService>();
         return services;
     }
 }
