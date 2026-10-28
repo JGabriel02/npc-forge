@@ -15,7 +15,7 @@ public record StatBlockActionDto(
     [MaxLength(NpcLimits.MediumText)] string? Damage);
 
 public record StatBlockRequest(
-    CreatureSize Size,
+    [Required, EnumDataType(typeof(CreatureSize))] CreatureSize? Size,
     [Required, MaxLength(NpcLimits.ShortText)] string CreatureType,
     [Required, MaxLength(NpcLimits.ShortText)] string Alignment,
     [Range(1, 30)] int ArmorClass,
@@ -33,9 +33,9 @@ public record StatBlockRequest(
     [MaxLength(NpcLimits.MediumText)] string? Skills,
     [MaxLength(NpcLimits.MediumText)] string? Senses,
     [MaxLength(NpcLimits.MediumText)] string? Languages,
-    List<StatBlockFeatureDto>? Traits,
-    List<StatBlockActionDto>? Actions,
-    List<StatBlockFeatureDto>? Reactions);
+    [NoNullElements] List<StatBlockFeatureDto>? Traits,
+    [NoNullElements] List<StatBlockActionDto>? Actions,
+    [NoNullElements] List<StatBlockFeatureDto>? Reactions);
 
 public record AbilityModifiers(int Str, int Dex, int Con, int Int, int Wis, int Cha);
 

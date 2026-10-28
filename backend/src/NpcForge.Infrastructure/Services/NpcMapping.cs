@@ -26,7 +26,7 @@ public static class NpcMapping
     public static StatBlock ToEntity(this StatBlockRequest r, Guid npcId) => new()
     {
         NpcId = npcId,
-        Size = r.Size, CreatureType = r.CreatureType, Alignment = r.Alignment,
+        Size = r.Size!.Value, CreatureType = r.CreatureType, Alignment = r.Alignment,
         ArmorClass = r.ArmorClass, HitPoints = r.HitPoints, HitDice = r.HitDice, Speed = r.Speed,
         Str = r.Str, Dex = r.Dex, Con = r.Con, Int = r.Int, Wis = r.Wis, Cha = r.Cha,
         ChallengeRating = r.ChallengeRating,

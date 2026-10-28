@@ -90,6 +90,18 @@ public class NpcsListTests(ApiFactory factory)
     }
 
     [Fact]
+    public async Task Paging_HugePage_ReturnsEmptyPageInsteadOfError()
+    {
+        var client = await factory.CreateAuthenticatedClientAsync();
+        await client.CreateNpcAsync("Um");
+
+        var page = await ListAsync(client, "page=2147483647&pageSize=100");
+
+        Assert.Empty(page.Items);
+        Assert.Equal(1, page.TotalCount);
+    }
+
+    [Fact]
     public async Task Paging_ReturnsTotalCountAndRequestedPage_MostRecentlyUpdatedFirst()
     {
         var client = await factory.CreateAuthenticatedClientAsync();

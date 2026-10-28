@@ -10,7 +10,8 @@ public class NpcService(AppDbContext db, TimeProvider time) : INpcService
 {
     public async Task<PagedResult<NpcSummaryDto>> ListAsync(string userId, NpcQuery query, CancellationToken ct)
     {
-        var page = Math.Max(1, query.Page);
+        // Limite superior evita overflow em (page - 1) * pageSize, que viraria OFFSET negativo.
+        var page = Math.Clamp(query.Page, 1, int.MaxValue / NpcQuery.MaxPageSize);
         var pageSize = Math.Clamp(query.PageSize, 1, NpcQuery.MaxPageSize);
         var npcs = Owned(userId);
 
