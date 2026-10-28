@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NpcForge.Api/NpcForge.Api.csproj" />
+    <Project Path="src/NpcForge.Core/NpcForge.Core.csproj" />
+    <Project Path="src/NpcForge.Infrastructure/NpcForge.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NpcForge.IntegrationTests/NpcForge.IntegrationTests.csproj" />
+    <Project Path="tests/NpcForge.UnitTests/NpcForge.UnitTests.csproj" />
+  </Folder>
+</Solution>
