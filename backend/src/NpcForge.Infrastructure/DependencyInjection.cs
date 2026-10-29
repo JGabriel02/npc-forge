@@ -39,6 +39,7 @@ public static class DependencyInjection
 
         services.AddSingleton<PromptBuilder>();
         services.AddScoped<IAiUsageService, AiUsageService>();
+        services.AddScoped<INpcGenerationService, NpcGenerationService>();
         services.AddHttpClient<IAiProvider, OllamaProvider>(http =>
         {
             http.BaseAddress = new Uri(ai.Ollama.BaseUrl);
