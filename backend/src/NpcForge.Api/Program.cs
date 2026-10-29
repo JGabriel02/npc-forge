@@ -56,7 +56,9 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
     .AllowAnyHeader()
-    .AllowAnyMethod()));
+    .AllowAnyMethod()
+    // Sem isto, o Angular (outra origem) não consegue ler o nome do arquivo exportado.
+    .WithExposedHeaders("Content-Disposition")));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers()

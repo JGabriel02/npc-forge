@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
 using NpcForge.Api.Auth;
 using NpcForge.Core.Common;
@@ -7,11 +8,34 @@ namespace NpcForge.Api.Controllers;
 
 [ApiController]
 [Route("api/npcs")]
-public class NpcsController(INpcService npcs) : ControllerBase
+public class NpcsController(INpcService npcs, INpcTransferService transfer, TimeProvider time) : ControllerBase
 {
     [HttpGet]
     public Task<PagedResult<NpcSummaryDto>> List([FromQuery] NpcQuery query, CancellationToken ct)
         => npcs.ListAsync(User.GetUserId(), query, ct);
+
+    /// <summary>Baixa um arquivo com todos os NPCs dos filtros da lista (page/pageSize são ignorados).</summary>
+    [HttpGet("export")]
+    public async Task<NpcExportFile> Export([FromQuery] NpcQuery filters, CancellationToken ct)
+    {
+        var file = await transfer.ExportAsync(User.GetUserId(), filters, ct);
+        SetAttachment(FileNames.ForList(DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime)));
+        return file;
+    }
+
+    [HttpGet("{id:guid}/export")]
+    public async Task<ActionResult<NpcExportFile>> ExportOne(Guid id, CancellationToken ct)
+    {
+        var file = await transfer.ExportOneAsync(User.GetUserId(), id, ct);
+        if (file is null) return NotFound();
+
+        SetAttachment(FileNames.ForNpc(file.Npcs![0].Name));
+        return file;
+    }
+
+    // "attachment" faz o navegador baixar o JSON como arquivo, com este nome.
+    private void SetAttachment(string fileName)
+        => Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = fileName }.ToString();
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<NpcDto>> Get(Guid id, CancellationToken ct)
