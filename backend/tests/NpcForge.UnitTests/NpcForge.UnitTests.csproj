@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\NpcForge.Core\NpcForge.Core.csproj" />
+    <ProjectReference Include="..\..\src\NpcForge.Infrastructure\NpcForge.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

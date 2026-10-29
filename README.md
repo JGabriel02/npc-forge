@@ -2,7 +2,9 @@
 
 Aplicação web para mestres de RPG criarem e organizarem NPCs de D&D 5e, com ou sem ficha de combate, agrupados em campanhas, e com uma IA integrada que gera e sugere conteúdo.
 
-> Projeto de portfólio e aprendizado em **.NET** e **Angular**. A IA chega nas próximas fases (veja [Roadmap](#roadmap)).
+> Projeto de portfólio e aprendizado em **.NET** e **Angular**.
+>
+> A IA é **opcional** e vem **desligada**: sem ela, o app funciona normalmente com criação manual de NPCs (é assim que roda a versão web). Para gerar NPCs com IA no seu computador, siga [Rodando com IA localmente](#rodando-com-ia-localmente).
 
 ## Stack
 
@@ -33,6 +35,67 @@ Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop
    ```
 
    Abra `http://localhost:4200` e crie uma conta.
+
+## Rodando com IA localmente
+
+Com a IA ligada, a tela **Novo NPC** ganha o card **"✨ Gerar com IA"**: você descreve o NPC ("anão ferreiro rabugento, guarda um segredo") e a IA preenche o formulário, com ou sem ficha de combate. Nada é salvo até você revisar e clicar em Salvar. Não há limite de gerações: a IA roda na sua máquina, então o único custo é a placa de vídeo ocupada por alguns segundos a cada geração. Se quiser um teto diário por usuário, defina `AI_DAILY_LIMIT` no `.env`.
+
+A IA roda **no seu computador** com o [Ollama](https://ollama.com), sem custo e sem enviar dados para fora.
+
+1. **Instale o Ollama** pelo site oficial e confirme no terminal:
+
+   ```bash
+   ollama --version
+   ```
+
+2. **Baixe o modelo** (cerca de 9 GB; fica rápido com uma GPU de ~10 GB de VRAM ou mais):
+
+   ```bash
+   ollama pull qwen2.5:14b
+   ```
+
+3. **Ligue a IA** no `.env`:
+
+   ```bash
+   AI_ENABLED=true
+   ```
+
+4. **Suba o app de novo** e abra "Novo NPC":
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+   Se `http://localhost:8080/api/features` mostrar `{"ai":true}`, está tudo certo.
+
+   **No Linux:** o Ollama instalado só aceita conexões de `127.0.0.1`, e a API dentro do Docker não consegue alcançá-lo (você veria "A IA não está disponível agora." mesmo com `ollama list` funcionando). Faça o Ollama escutar em todas as interfaces e reinicie-o:
+
+   ```bash
+   sudo systemctl edit ollama   # adicione as duas linhas abaixo e salve
+   # [Service]
+   # Environment="OLLAMA_HOST=0.0.0.0"
+   sudo systemctl restart ollama
+   ```
+
+   No Windows e no macOS (Docker Desktop) não é preciso fazer nada.
+
+5. **Outros modelos:** qualquer modelo do Ollama funciona; basta baixá-lo com `ollama pull` e colocar o nome em `OLLAMA_MODEL`. O padrão, `qwen2.5:14b`, foi testado com este app (bom em português e em seguir o formato JSON). Modelos maiores costumam gerar NPCs melhores e mais lentos; modelos pequenos podem errar mais o formato — o app corrige o que der e avisa o que ajustou.
+
+   **Sem GPU ou com pouca memória:** use um modelo menor e dê mais tempo para a resposta. No `.env`, `OLLAMA_MODEL=qwen2.5:7b` (ou `qwen2.5:3b`), e no `docker-compose.yml`, `Ai__TimeoutSeconds: 180` no serviço `api`. Não esqueça de rodar `ollama pull` do modelo escolhido.
+
+6. **Sem o Ollama instalado:** dá para rodá-lo dentro do Docker (bem mais lento sem GPU):
+
+   ```bash
+   docker compose --profile ollama-docker up -d
+   docker compose exec ollama ollama pull qwen2.5:14b
+   ```
+
+   e no `.env`: `OLLAMA_BASE_URL=http://ollama:11434`.
+
+7. **Problemas comuns:**
+   - *"A IA não está disponível agora."* — o Ollama não está rodando. Abra o aplicativo do Ollama (ou rode `ollama serve`) e confira com `ollama list`.
+   - *"O modelo ... não está instalado no Ollama"* — rode o `ollama pull` do modelo que está no `.env`.
+   - *"A IA demorou demais para responder."* — modelo pesado para a sua máquina; use um menor (passo 5).
 
 ### Rodando a API fora do Docker
 
@@ -92,7 +155,7 @@ Decisões e o design completo: [docs/superpowers/specs](docs/superpowers/specs/2
 
 1. ~~Fundação do backend~~
 2. ~~Frontend Angular (sem IA)~~
-3. IA (Ollama) + limite diário de gerações
+3. ~~IA local (Ollama), com contador diário de gerações~~
 4. Sugestões por campo ✨
 5. NPCs públicos
 6. Provedor de IA em nuvem, polimento e prints neste README

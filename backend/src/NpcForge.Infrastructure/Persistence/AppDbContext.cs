@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Campaign> Campaigns => Set<Campaign>();
     public DbSet<Npc> Npcs => Set<Npc>();
     public DbSet<StatBlock> StatBlocks => Set<StatBlock>();
+    public DbSet<AiUsage> AiUsages => Set<AiUsage>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -1,0 +1,10 @@
+Crie um NPC para a mesa.
+
+Pedido do mestre:
+<<<
+{{prompt}}
+>>>
+
+Cenário e tom da campanha: {{setting}}
+
+{{statBlockInstruction}}

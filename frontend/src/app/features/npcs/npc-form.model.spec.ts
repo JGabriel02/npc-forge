@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { NonNullableFormBuilder } from '@angular/forms';
-import { NpcDto } from '../../core/api/api.models';
+import { NpcDraft, NpcDto } from '../../core/api/api.models';
 import {
-  buildNpcForm, defaultStatBlockValue, emptyNpcFormValue, loadNpcForm, NpcFormValue, planSave,
+  buildNpcForm, defaultStatBlockValue, draftToFormValue, emptyNpcFormValue, loadNpcForm, NpcFormValue, planSave,
   toCreateRequest, toFormValue, toStatBlockRequest, toUpdateRequest,
 } from './npc-form.model';
 
@@ -93,6 +93,51 @@ describe('npc-form.model', () => {
     const original = { ...npcWithStatBlock, statBlock: null };
 
     expect(planSave(original, narrative())).toEqual([{ kind: 'update' }]);
+  });
+
+  describe('draftToFormValue', () => {
+    const draft: NpcDraft = {
+      name: 'Vasilka', race: 'humana', occupation: null, appearance: 'Olhos de vidro.',
+      personality: null, background: 'Montada por um cientista.', statBlock: null,
+    };
+
+    it('preserves campaign and notes from the current form', () => {
+      const current = { ...emptyNpcFormValue(), name: 'Antigo', campaignId: 'c1', notes: 'segredo da mesa' };
+
+      const value = draftToFormValue(draft, current);
+
+      expect(value.name).toBe('Vasilka');
+      expect(value.campaignId).toBe('c1');
+      expect(value.notes).toBe('segredo da mesa');
+    });
+
+    it('maps null optional texts to empty strings', () => {
+      const value = draftToFormValue(draft, emptyNpcFormValue());
+
+      expect(value.occupation).toBe('');
+      expect(value.personality).toBe('');
+      expect(value.appearance).toBe('Olhos de vidro.');
+    });
+
+    it('without stat block turns the toggle off and resets the sheet to defaults', () => {
+      const current = { ...toFormValue(npcWithStatBlock), includeStatBlock: true };
+
+      const value = draftToFormValue(draft, current);
+
+      expect(value.includeStatBlock).toBe(false);
+      expect(value.statBlock).toEqual(defaultStatBlockValue());
+    });
+
+    it('with stat block turns the toggle on and fills the sheet', () => {
+      const { modifiers, proficiencyBonus, ...sheet } = npcWithStatBlock.statBlock!;
+
+      const value = draftToFormValue({ ...draft, statBlock: sheet }, emptyNpcFormValue());
+
+      expect(value.includeStatBlock).toBe(true);
+      expect(value.statBlock.hitDice).toBe('4d8 + 8');
+      expect(value.statBlock.actions[0].attackBonus).toBe(5);
+      expect(value.statBlock.savingThrows).toBe('');
+    });
   });
 
   describe('form', () => {

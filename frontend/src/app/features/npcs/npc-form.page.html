@@ -17,6 +17,29 @@
         <h1>{{ original() ? 'Editar ' + original()!.name : 'Novo NPC' }}</h1>
       </header>
 
+      @if (!original() && features.ai()) {
+        <app-ai-prompt
+          [campaignId]="form.controls.campaignId.value"
+          [withStatBlock]="form.controls.includeStatBlock.value"
+          (withStatBlockChange)="form.controls.includeStatBlock.setValue($event)"
+          (generated)="applyDraft($event)"
+        />
+      }
+
+      @if (aiWarnings(); as warnings) {
+        <aside class="ai-result" role="status">
+          <p><mat-icon inline>auto_awesome</mat-icon> NPC gerado pela IA. Revise e salve: nada foi salvo ainda.</p>
+          @if (warnings.length) {
+            <p class="ai-warnings-title"><mat-icon inline>warning</mat-icon> A IA ajustou alguns valores:</p>
+            <ul>
+              @for (warning of warnings; track $index) {
+                <li>{{ warning }}</li>
+              }
+            </ul>
+          }
+        </aside>
+      }
+
       <form [formGroup]="form" (ngSubmit)="save()" novalidate>
         @if (messages().length) {
           <ul class="messages" role="alert">

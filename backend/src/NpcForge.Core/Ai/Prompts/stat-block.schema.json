@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "properties": {
+    "size": { "type": "string", "enum": ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] },
+    "creatureType": { "type": "string" },
+    "alignment": { "type": "string" },
+    "armorClass": { "type": "integer" },
+    "hitPoints": { "type": "integer" },
+    "hitDice": { "type": "string" },
+    "speed": { "type": "string" },
+    "str": { "type": "integer" },
+    "dex": { "type": "integer" },
+    "con": { "type": "integer" },
+    "int": { "type": "integer" },
+    "wis": { "type": "integer" },
+    "cha": { "type": "integer" },
+    "challengeRating": { "type": "string" },
+    "savingThrows": { "type": ["string", "null"] },
+    "skills": { "type": ["string", "null"] },
+    "senses": { "type": ["string", "null"] },
+    "languages": { "type": ["string", "null"] },
+    "traits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "description": { "type": "string" } },
+        "required": ["name", "description"]
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "attackBonus": { "type": ["integer", "null"] },
+          "damage": { "type": ["string", "null"] }
+        },
+        "required": ["name", "description", "attackBonus", "damage"]
+      }
+    },
+    "reactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": { "name": { "type": "string" }, "description": { "type": "string" } },
+        "required": ["name", "description"]
+      }
+    }
+  },
+  "required": [
+    "size", "creatureType", "alignment", "armorClass", "hitPoints", "hitDice", "speed",
+    "str", "dex", "con", "int", "wis", "cha", "challengeRating",
+    "savingThrows", "skills", "senses", "languages", "traits", "actions", "reactions"
+  ]
+}

@@ -118,6 +118,36 @@ export interface PagedResult<T> {
   totalCount: number;
 }
 
+/** NPC sugerido pela IA (não salvo). */
+export interface NpcDraft {
+  name: string;
+  race: string | null;
+  occupation: string | null;
+  appearance: string | null;
+  personality: string | null;
+  background: string | null;
+  statBlock: StatBlockRequest | null;
+}
+
+export interface GenerateNpcRequest {
+  prompt: string;
+  campaignId: string | null;
+  withStatBlock: boolean;
+  challengeRating: string | null;
+}
+
+export interface AiUsageDto {
+  used: number;
+  limit: number;
+  resetsAt: string;
+}
+
+export interface GenerateNpcResponse {
+  draft: NpcDraft;
+  warnings: string[];
+  usage: AiUsageDto;
+}
+
 /** Formato padrão de erro da API (RFC 9457). */
 export interface ProblemDetails {
   title?: string;

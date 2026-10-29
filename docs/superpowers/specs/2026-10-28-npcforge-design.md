@@ -23,7 +23,7 @@ O projeto tem dois objetivos de igual peso:
 2. A partir de um prompt curto, a IA gera um NPC completo (com ou sem ficha D&D 5e), que o usuário revisa, edita e salva.
 3. No formulário de edição, cada campo relevante pode ser regerado individualmente pela IA (botão ✨).
 4. Respostas inválidas da IA nunca são salvas; valores fora das regras são corrigidos e sinalizados ao usuário.
-5. Cada usuário pode fazer até 5 gerações completas de NPC por dia; o app mostra quantas restam.
+5. O app mostra quantas gerações o usuário fez no dia. Por padrão não há limite (a IA roda no computador do próprio usuário); um limite diário pode ser configurado para quando houver provedor pago.
 6. Um usuário pode tornar um NPC público; outros usuários encontram esse NPC numa galeria e adicionam uma cópia à própria campanha.
 7. `docker compose up` + `ng serve` sobem o ambiente completo; os testes passam sem precisar de IA real.
 
@@ -36,7 +36,7 @@ O projeto tem dois objetivos de igual peso:
 - CRUD de NPCs em dois modos: **narrativo** (sem ficha) e **com ficha D&D 5e** (para inimigos). A ficha pode ser adicionada ou removida depois.
 - Geração completa de NPC por IA a partir de prompt.
 - Sugestão por campo (✨) no formulário.
-- Limite diário de 5 gerações completas de NPC por usuário.
+- Contador diário de gerações por usuário, com limite opcional (padrão: sem limite).
 - NPCs públicos: galeria de NPCs públicos e cópia de um NPC público para a própria conta/campanha.
 - Provedores de IA: Ollama (local, padrão) e um provedor gratuito em nuvem, atrás da mesma interface.
 
@@ -206,6 +206,7 @@ Base `/api`. Todas as rotas, exceto `/auth/register` e `/auth/login`, exigem JWT
 | POST | `/ai/generate-npc` | `{ prompt, campaignId?, withStatBlock, challengeRating? }` | `{ draft: NpcDraft, warnings: string[], usage }` |
 | POST | `/ai/suggest-field` | `{ field, npcDraft, campaignId?, instruction? }` | `{ field, value, warnings: string[] }` |
 | GET | `/ai/usage` | — | `{ used, limit, resetsAt }` |
+| GET | `/features` | — | `{ ai: boolean }` — público (sem login); diz ao frontend se a IA está ligada nesta instalação |
 
 Campos aceitos em `suggest-field`: `name`, `race`, `occupation`, `appearance`, `personality`, `background`, `traits`, `actions`, `reactions`, `abilityScores`.
 
@@ -213,7 +214,7 @@ Campos aceitos em `suggest-field`: `name`, `race`, `occupation`, `appearance`, `
 
 - Erros no formato `ProblemDetails`: 400 (validação), 401, 404, 429 (limite atingido), 502 (falha da IA), 504 (timeout da IA).
 - Limites de uso da IA (detalhes na seção 6, "Limite diário de gerações"):
-  - `generate-npc`: **5 por dia** por usuário (configurável em `Ai:DailyGenerationLimit`), persistido no banco.
+  - `generate-npc`: contador diário por usuário persistido no banco; limite configurável em `Ai:DailyGenerationLimit`, **padrão 0 = sem limite** (decisão: na versão local a IA não tem custo; o limite existe para um futuro provedor pago). A tela mostra um aviso de que cada geração ocupa a GPU.
   - `suggest-field`: sem limite diário; apenas limite por minuto contra abuso (middleware nativo de rate limiting do ASP.NET Core, padrão de 10 por minuto, configurável).
 - O rascunho gerado pela IA só é persistido quando o usuário salva via `POST /npcs`, que reaplica todas as validações.
 
@@ -226,6 +227,17 @@ AiController → NpcGenerationService → PromptBuilder
                        │
                        └─► NpcDraftValidator (parse, validação, correção) → draft + warnings
 ```
+
+### IA ligada ou desligada (feature flag)
+
+A mesma base de código serve a duas formas de rodar o app, controladas pela chave `Ai:Enabled` (padrão **`false`**):
+
+- **Versão web (deploy público):** `Ai:Enabled = false`. Os endpoints `/ai/*` respondem **404** com o título "A IA está desativada nesta instalação.", nada de IA é registrado na injeção de dependências (nenhuma configuração de provedor é exigida) e o frontend esconde todos os elementos de IA. Criar e editar NPCs manualmente funciona normalmente.
+- **Versão local com IA:** `Ai:Enabled = true` + Ollama instalado. O README traz um tutorial passo a passo ("Rodando com IA localmente").
+- O frontend descobre o modo pelo `GET /features`; se a chamada falhar, assume IA desligada.
+- No futuro (provedor em nuvem), a versão web pode ligar a IA só mudando a configuração, sem branch ou código separado.
+
+Decisão: uma chave de configuração em vez de dois branches permanentes, para que correções e testes valham para as duas versões.
 
 ### Componentes
 
@@ -245,7 +257,7 @@ AiController → NpcGenerationService → PromptBuilder
    - ND fora da lista → ND válido mais próximo;
    - `HitDice` em formato inválido → removido, com aviso;
    - campos de texto acima do limite → truncados.
-4. Timeout configurável (`Ai:TimeoutSeconds`, padrão 60) → 504. Se o cliente cancelar a requisição, o `CancellationToken` é propagado até o provedor.
+4. Timeout configurável (`Ai:TimeoutSeconds`, padrão 120 — medido no teste real: ~35 s por geração com o modelo já carregado e mais de 60 s na primeira, que carrega o modelo na GPU) → 504. O pedido ao Ollama usa `keep_alive: 30m` para o modelo continuar carregado entre gerações. Se o cliente cancelar a requisição, o `CancellationToken` é propagado até o provedor.
 
 ### Limite diário de gerações
 
@@ -282,7 +294,7 @@ Todas as rotas, exceto login e registro, são protegidas por `authGuard`.
 3. O usuário edita e pode regerar campos individuais com ✨.
 4. "Salvar" → `POST /npcs`. O passo 1 é opcional: o usuário pode preencher tudo manualmente.
 
-A tela mostra o contador "X de 5 gerações hoje" (via `GET /ai/usage`). Quando o limite acaba, o botão "✨ Gerar com IA" fica desabilitado com o horário de renovação, mas o preenchimento manual e os botões ✨ por campo continuam funcionando.
+A tela mostra o contador ("N gerações hoje" sem limite, ou "X de N gerações hoje" com limite configurado), via `GET /ai/usage`. Quando o limite acaba, o botão "✨ Gerar com IA" fica desabilitado com o horário de renovação, mas o preenchimento manual e os botões ✨ por campo continuam funcionando.
 
 ### Fluxo de NPC público
 
@@ -348,7 +360,7 @@ npc-forge/
 
 - `docker compose up` sobe Postgres, Ollama e a API. O Angular roda com `ng serve` em desenvolvimento.
 - Migrations do EF Core aplicadas automaticamente no startup apenas no ambiente de desenvolvimento.
-- Configuração por variáveis de ambiente: connection string, `Ai__Provider`, `Ai__TimeoutSeconds`, `Ai__DailyGenerationLimit`, chave do provedor em nuvem, segredo e expiração do JWT. O `.env.example` fica versionado, e nenhum segredo é commitado.
+- Configuração por variáveis de ambiente: connection string, `Ai__Enabled`, `Ai__Provider`, `Ai__TimeoutSeconds`, `Ai__DailyGenerationLimit`, chave do provedor em nuvem, segredo e expiração do JWT. O `.env.example` fica versionado, e nenhum segredo é commitado.
 - CORS liberado apenas para a origem do front configurada.
 - Preparação para deploy (fora da v1): Dockerfile do front (build + nginx) e troca de provedor via configuração.
 

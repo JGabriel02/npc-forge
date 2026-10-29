@@ -102,6 +102,36 @@ public class DndRulesTests
     public void NormalizeHitDice_UsesThePlayersHandbookFormat(string input, string expected)
         => Assert.Equal(expected, DndRules.NormalizeHitDice(input));
 
+    [Theory]
+    [InlineData("2d8 + 2", 11)]
+    [InlineData("4d8+4", 22)]
+    [InlineData("1d4 – 1", 1)]
+    [InlineData("1d4 - 5", 1)]
+    [InlineData("18d8 + 54", 135)]
+    public void AverageHitPoints_FollowsTheBookAverage(string hitDice, int expected)
+        => Assert.Equal(expected, DndRules.AverageHitPoints(hitDice));
+
+    [Fact]
+    public void AverageHitPoints_InvalidNotation_Throws()
+        => Assert.Throws<ArgumentException>(() => DndRules.AverageHitPoints("4d"));
+
+    [Theory]
+    [InlineData(0.3, "1/4")]
+    [InlineData(0.4, "1/2")]
+    [InlineData(7.4, "7")]
+    [InlineData(7.5, "7")]
+    [InlineData(31, "30")]
+    [InlineData(-2, "0")]
+    public void NearestChallengeRating_PicksClosestOfficialValue(double value, string expected)
+        => Assert.Equal(expected, DndRules.NearestChallengeRating(value));
+
+    [Theory]
+    [InlineData("1/8", 0.125)]
+    [InlineData("1/2", 0.5)]
+    [InlineData("12", 12)]
+    public void ChallengeRatingValue_ConvertsFractions(string cr, double expected)
+        => Assert.Equal(expected, DndRules.ChallengeRatingValue(cr));
+
     [Fact]
     public void NormalizeHitDice_InvalidNotation_Throws()
         => Assert.Throws<ArgumentException>(() => DndRules.NormalizeHitDice("4d"));

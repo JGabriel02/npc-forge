@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Templates de prompt e schemas JSON da IA, lidos pelo PromptBuilder. -->
+    <EmbeddedResource Include="Ai\Prompts\*" LogicalName="NpcForge.Core.Ai.Prompts.%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

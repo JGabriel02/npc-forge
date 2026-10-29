@@ -19,6 +19,9 @@ const IDENTITY_MESSAGES: Record<string, string> = {
 export function errorMessages(form: AbstractControl, error: unknown): string[] {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) return ['Não foi possível conectar à API.'];
+    // 502/504 vêm da IA com título já em português; outros 5xx trazem títulos técnicos em inglês.
+    const title = problemFrom(error)?.title;
+    if ((error.status === 502 || error.status === 504) && title) return [title];
     if (error.status >= 500) return ['Erro no servidor. Tente novamente em instantes.'];
   }
 

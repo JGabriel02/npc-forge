@@ -21,6 +21,14 @@ describe('errorMessages', () => {
       .toEqual(['Não encontrado. Talvez tenha sido excluído.']);
   });
 
+  it.each([
+    [429, 'Você atingiu o limite de gerações de hoje.'],
+    [502, 'A IA não está disponível agora.'],
+    [504, 'A IA demorou demais para responder. Tente novamente.'],
+  ])('uses the API title for AI errors (%i)', (status, title) => {
+    expect(errorMessages(form(), httpError(status, { title, status }))).toEqual([title]);
+  });
+
   it('keeps Portuguese titles from the API', () => {
     expect(errorMessages(form(), httpError(401, { title: 'E-mail ou senha inválidos.', status: 401 })))
       .toEqual(['E-mail ou senha inválidos.']);

@@ -1,6 +1,6 @@
 import { FormGroup, NonNullableFormBuilder, Validators } from '@angular/forms';
 import {
-  CreateNpcRequest, CreatureSize, NpcDto, StatBlockActionDto, StatBlockFeatureDto, StatBlockRequest, UpdateNpcRequest,
+  CreateNpcRequest, CreatureSize, NpcDraft, NpcDto, StatBlockActionDto, StatBlockFeatureDto, StatBlockRequest, UpdateNpcRequest,
 } from '../../core/api/api.models';
 
 // Mesmo formato aceito pelo backend: "2d8+2", "2d8 + 2", "1d4 – 1" (hífen, travessão ou sinal de menos).
@@ -126,6 +126,36 @@ export function toFormValue(npc: NpcDto): NpcFormValue {
           str: s.str, dex: s.dex, con: s.con, int: s.int, wis: s.wis, cha: s.cha,
           challengeRating: s.challengeRating,
           savingThrows: s.savingThrows ?? '', skills: s.skills ?? '', senses: s.senses ?? '',
+          languages: s.languages ?? '',
+          traits: s.traits.map((t) => ({ ...t })),
+          actions: s.actions.map((a) => ({ ...a, damage: a.damage ?? '' })),
+          reactions: s.reactions.map((r) => ({ ...r })),
+        }
+      : defaultStatBlockValue(),
+  };
+}
+
+/**
+ * Aplica um rascunho da IA sobre o formulário atual: troca o conteúdo gerado,
+ * mas mantém o que só o mestre decide (campanha e anotações).
+ */
+export function draftToFormValue(draft: NpcDraft, current: NpcFormValue): NpcFormValue {
+  const s = draft.statBlock;
+  return {
+    ...current,
+    name: draft.name,
+    race: draft.race ?? '',
+    occupation: draft.occupation ?? '',
+    appearance: draft.appearance ?? '',
+    personality: draft.personality ?? '',
+    background: draft.background ?? '',
+    includeStatBlock: s !== null,
+    statBlock: s
+      ? {
+          ...s,
+          savingThrows: s.savingThrows ?? '',
+          skills: s.skills ?? '',
+          senses: s.senses ?? '',
           languages: s.languages ?? '',
           traits: s.traits.map((t) => ({ ...t })),
           actions: s.actions.map((a) => ({ ...a, damage: a.damage ?? '' })),
