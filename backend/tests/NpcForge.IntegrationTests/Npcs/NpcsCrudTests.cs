@@ -47,6 +47,20 @@ public class NpcsCrudTests(ApiFactory factory)
         Assert.Equal("Medium", npc.StatBlock.Size);
     }
 
+    [Theory]
+    [InlineData("2d8 + 2", "2d8 + 2")]
+    [InlineData("1d4 – 1", "1d4 – 1")]
+    [InlineData("4d8+8", "4d8 + 8")]
+    public async Task Create_HitDiceInBookFormat_IsAcceptedAndStoredNormalized(string sent, string stored)
+    {
+        var client = await factory.CreateAuthenticatedClientAsync();
+
+        var npc = await client.CreateNpcAsync(statBlock: NpcTestData.ValidStatBlock() with { HitDice = sent });
+
+        var reloaded = await client.GetFromJsonAsync<NpcBody>($"/api/npcs/{npc.Id}");
+        Assert.Equal(stored, reloaded!.StatBlock!.HitDice);
+    }
+
     public static TheoryData<string, StatBlockPayload> InvalidStatBlocks => new()
     {
         { "Str", NpcTestData.ValidStatBlock() with { Str = 31 } },

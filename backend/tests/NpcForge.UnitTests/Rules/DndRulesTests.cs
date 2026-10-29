@@ -69,6 +69,11 @@ public class DndRulesTests
     [InlineData("4d8+4")]
     [InlineData("1d6")]
     [InlineData("10d10-5")]
+    [InlineData("2d8 + 2")]   // formato das fichas do Livro do Jogador 2024
+    [InlineData("1d4 – 1")]   // travessão (en dash), como no livro
+    [InlineData("1d4 − 1")]   // sinal de menos tipográfico
+    [InlineData(" 3d8 ")]
+    [InlineData("2D8+2")]
     public void IsValidHitDice_AcceptsDiceNotation(string hitDice)
         => Assert.True(DndRules.IsValidHitDice(hitDice));
 
@@ -76,9 +81,28 @@ public class DndRulesTests
     [InlineData("d8")]
     [InlineData("4d")]
     [InlineData("4d8+")]
+    [InlineData("2d8 + ")]
+    [InlineData("2d8 ++ 2")]
+    [InlineData("2d8 * 2")]
     [InlineData("abc")]
     [InlineData("")]
     [InlineData(null)]
     public void IsValidHitDice_RejectsInvalidNotation(string? hitDice)
         => Assert.False(DndRules.IsValidHitDice(hitDice));
+
+    [Theory]
+    [InlineData("2d8+2", "2d8 + 2")]
+    [InlineData("2d8 + 2", "2d8 + 2")]
+    [InlineData("1d4-1", "1d4 – 1")]
+    [InlineData("1d4 – 1", "1d4 – 1")]
+    [InlineData("1d4 − 1", "1d4 – 1")]
+    [InlineData("3d8", "3d8")]
+    [InlineData(" 2D8 +2 ", "2d8 + 2")]
+    [InlineData("2d8 + 0", "2d8")]
+    public void NormalizeHitDice_UsesThePlayersHandbookFormat(string input, string expected)
+        => Assert.Equal(expected, DndRules.NormalizeHitDice(input));
+
+    [Fact]
+    public void NormalizeHitDice_InvalidNotation_Throws()
+        => Assert.Throws<ArgumentException>(() => DndRules.NormalizeHitDice("4d"));
 }
