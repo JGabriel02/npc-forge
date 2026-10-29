@@ -45,6 +45,11 @@ export const routes: Routes = [
         canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],
       },
       {
+        path: 'npcs/:id',
+        title: 'NPC · NpcForge',
+        loadComponent: () => import('./features/npcs/npc-view.page').then((m) => m.NpcViewPage),
+      },
+      {
         path: 'campaigns/:id',
         title: 'Campanha · NpcForge',
         loadComponent: () => import('./features/campaigns/campaign-detail.page').then((m) => m.CampaignDetailPage),

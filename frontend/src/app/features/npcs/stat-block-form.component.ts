@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { map, merge, startWith, switchMap } from 'rxjs';
 import { ABILITIES, CHALLENGE_RATINGS, CREATURE_SIZES, STAT_BLOCK_LIST_MAX } from '../../core/api/api.models';
+import { formatModifier } from '../../shared/dnd-format';
 import { fieldError } from '../../shared/field-error';
 import { buildActionGroup, buildFeatureGroup, NpcForm } from './npc-form.model';
 
@@ -51,8 +52,7 @@ export class StatBlockFormComponent {
 
   protected modifier(score: number | null | undefined): string {
     if (typeof score !== 'number' || Number.isNaN(score)) return '';
-    const mod = Math.floor((score - 10) / 2);
-    return mod >= 0 ? `+${mod}` : `${mod}`;
+    return formatModifier(Math.floor((score - 10) / 2));
   }
 
   protected addFeature(list: FeatureListKey): void {

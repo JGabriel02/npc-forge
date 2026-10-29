@@ -49,6 +49,8 @@ export class NpcFormPage {
   readonly id = input<string>();
   /** Query param ?campaignId= (pré-seleciona a campanha ao criar). */
   readonly campaignId = input<string>();
+  /** Query param ?withStatBlock=1 (vem do botão "Adicionar ficha"): já abre com a ficha ligada. */
+  readonly withStatBlock = input<string>();
 
   protected readonly form = buildNpcForm(this.fb);
   protected readonly fieldError = fieldError;
@@ -137,6 +139,10 @@ export class NpcFormPage {
         this.original.set(npc);
         loadNpcForm(this.fb, this.form, toFormValue(npc));
         this.form.markAsPristine();
+        if (this.withStatBlock() === '1' && !npc.statBlock) {
+          this.form.controls.includeStatBlock.setValue(true);
+          this.form.controls.includeStatBlock.markAsDirty();
+        }
         this.state.set('ready');
       },
       error: (error: unknown) =>

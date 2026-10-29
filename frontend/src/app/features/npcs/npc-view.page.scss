@@ -1,0 +1,100 @@
+.spinner {
+  margin: 48px auto;
+}
+
+.back {
+  margin: 0 0 8px -12px;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.campaign {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.danger {
+  color: var(--mat-sys-error);
+}
+
+.layout {
+  display: grid;
+  gap: 32px;
+
+  &.with-sheet {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+}
+
+.story {
+  section + section {
+    margin-top: 20px;
+  }
+
+  h2 {
+    margin: 0 0 4px;
+    font: var(--mat-sys-title-medium);
+    color: var(--mat-sys-primary);
+  }
+
+  p {
+    max-width: 70ch;
+    margin: 0;
+    white-space: pre-line;
+  }
+}
+
+.muted {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.notes {
+  margin-top: 24px;
+  padding: 12px 16px;
+  border: 1px dashed var(--mat-sys-outline);
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container-low);
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.no-sheet {
+  padding: 24px;
+  border: 1px dashed var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+
+  p {
+    margin: 0 0 12px;
+  }
+}
+
+@media (max-width: 899px) {
+  .layout.with-sheet {
+    grid-template-columns: 1fr;
+  }
+
+  // No celular, a ficha vem antes do texto: é o que o mestre consulta em combate.
+  .sheet {
+    order: -1;
+  }
+}
