@@ -1,0 +1,68 @@
+<mat-card appearance="outlined" class="ai-card">
+  <mat-card-content>
+    <div class="header">
+      <h2><mat-icon>auto_awesome</mat-icon> Gerar com IA</h2>
+      @if (usage(); as u) {
+        <span class="counter" [class.exhausted]="exhausted()">{{ u.used }} de {{ u.limit }} gerações hoje</span>
+      }
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="generate()" novalidate>
+      @if (messages().length) {
+        <ul class="messages" role="alert">
+          @for (message of messages(); track message) {
+            <li>{{ message }}</li>
+          }
+        </ul>
+      }
+
+      <mat-form-field appearance="outline" class="prompt">
+        <mat-label>Descreva o NPC</mat-label>
+        <textarea
+          matInput
+          formControlName="prompt"
+          rows="2"
+          maxlength="500"
+          placeholder="Ex.: anão ferreiro rabugento que guarda um segredo sobre o barão"
+        ></textarea>
+        <mat-hint align="end">{{ form.controls.prompt.value.length }}/500</mat-hint>
+        <mat-error>{{ fieldError(form.controls.prompt) }}</mat-error>
+      </mat-form-field>
+
+      <div class="options">
+        <mat-slide-toggle [checked]="withStatBlock()" (change)="withStatBlockChange.emit($event.checked)">
+          Incluir ficha de combate
+        </mat-slide-toggle>
+
+        @if (withStatBlock()) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="cr">
+            <mat-label>Nível de desafio</mat-label>
+            <mat-select formControlName="challengeRating">
+              <mat-option value="">Deixar a IA escolher</mat-option>
+              @for (cr of challengeRatings; track cr) {
+                <mat-option [value]="cr">ND {{ cr }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+        <span class="spacer"></span>
+
+        @if (generating()) {
+          <span class="progress" role="status">
+            <mat-spinner diameter="20" /> Gerando… pode levar alguns segundos
+          </span>
+          <button matButton type="button" (click)="cancel()">Cancelar</button>
+        } @else {
+          <button matButton="filled" type="submit" [disabled]="exhausted()">
+            <mat-icon>auto_awesome</mat-icon> Gerar com IA
+          </button>
+        }
+      </div>
+
+      @if (exhausted()) {
+        <p class="exhausted-hint">Você usou todas as gerações de hoje. Novas gerações às {{ resetsAtLabel() }}. Você ainda pode preencher o NPC à mão.</p>
+      }
+    </form>
+  </mat-card-content>
+</mat-card>

@@ -16,8 +16,11 @@ import { CampaignDto, NpcDto } from '../../core/api/api.models';
 import { errorMessages } from '../../core/api/problem-details';
 import { fieldError } from '../../shared/field-error';
 import { CampaignsApi } from '../campaigns/campaigns.api';
+import { FeaturesService } from '../../core/features/features.service';
+import { AiPromptComponent, GeneratedDraft } from './ai-prompt.component';
 import {
-  buildNpcForm, loadNpcForm, planSave, SaveStep, toCreateRequest, toFormValue, toStatBlockRequest, toUpdateRequest,
+  buildNpcForm, draftToFormValue, loadNpcForm, planSave, SaveStep, toCreateRequest, toFormValue, toStatBlockRequest,
+  toUpdateRequest,
 } from './npc-form.model';
 import { NpcsApi } from './npcs.api';
 import { StatBlockFormComponent } from './stat-block-form.component';
@@ -35,6 +38,7 @@ interface StepError {
   imports: [
     ReactiveFormsModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule,
     MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSlideToggleModule, StatBlockFormComponent,
+    AiPromptComponent,
   ],
   templateUrl: './npc-form.page.html',
   styleUrl: './npc-form.page.scss',
@@ -60,6 +64,9 @@ export class NpcFormPage {
   protected readonly original = signal<NpcDto | null>(null);
   protected readonly saving = signal(false);
   protected readonly messages = signal<string[]>([]);
+  protected readonly features = inject(FeaturesService);
+  /** Avisos da última geração por IA (null = nada gerado ainda). */
+  protected readonly aiWarnings = signal<string[] | null>(null);
   private saved = false;
 
   constructor() {
@@ -78,6 +85,14 @@ export class NpcFormPage {
   /** Usado pelo canDeactivate: pede confirmação se houver alterações não salvas. */
   canLeave(): boolean {
     return this.saved || !this.form.dirty || confirm('Descartar as alterações não salvas?');
+  }
+
+  /** Rascunho da IA: substitui o conteúdo gerado, preserva campanha e anotações. */
+  protected applyDraft({ draft, warnings }: GeneratedDraft): void {
+    loadNpcForm(this.fb, this.form, draftToFormValue(draft, this.form.getRawValue()));
+    this.form.markAsDirty();
+    this.messages.set([]);
+    this.aiWarnings.set(warnings);
   }
 
   protected cancelLink(): string[] {

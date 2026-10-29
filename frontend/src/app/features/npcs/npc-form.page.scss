@@ -2,6 +2,31 @@
   margin: 48px auto;
 }
 
+.ai-result {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+
+  .ai-warnings-title {
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  ul {
+    margin: 4px 0 0;
+    padding-left: 28px;
+  }
+}
+
 .messages {
   margin: 0 0 16px;
   padding: 12px 16px;
