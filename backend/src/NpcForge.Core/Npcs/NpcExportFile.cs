@@ -8,13 +8,13 @@ namespace NpcForge.Core.Npcs;
 /// (id, campanha, datas, dono).
 /// </summary>
 public record ExportedNpc(
-    [Required, MaxLength(NpcLimits.ShortText)] string Name,
-    [MaxLength(NpcLimits.ShortText)] string? Race,
-    [MaxLength(NpcLimits.ShortText)] string? Occupation,
-    [MaxLength(NpcLimits.LongText)] string? Appearance,
-    [MaxLength(NpcLimits.LongText)] string? Personality,
-    [MaxLength(NpcLimits.VeryLongText)] string? Background,
-    [MaxLength(NpcLimits.VeryLongText)] string? Notes,
+    [Display(Name = "Nome"), Required(ErrorMessage = Messages.Required), MaxLength(NpcLimits.ShortText, ErrorMessage = Messages.MaxLength)] string Name,
+    [Display(Name = "Raça"), MaxLength(NpcLimits.ShortText, ErrorMessage = Messages.MaxLength)] string? Race,
+    [Display(Name = "Profissão"), MaxLength(NpcLimits.ShortText, ErrorMessage = Messages.MaxLength)] string? Occupation,
+    [Display(Name = "Aparência"), MaxLength(NpcLimits.LongText, ErrorMessage = Messages.MaxLength)] string? Appearance,
+    [Display(Name = "Personalidade"), MaxLength(NpcLimits.LongText, ErrorMessage = Messages.MaxLength)] string? Personality,
+    [Display(Name = "Histórico"), MaxLength(NpcLimits.VeryLongText, ErrorMessage = Messages.MaxLength)] string? Background,
+    [Display(Name = "Anotações"), MaxLength(NpcLimits.VeryLongText, ErrorMessage = Messages.MaxLength)] string? Notes,
     StatBlockRequest? StatBlock);
 
 /// <summary>

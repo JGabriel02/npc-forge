@@ -66,6 +66,28 @@ public class NpcImportTests(ApiFactory factory)
         Assert.Equal(0, (await client.GetFromJsonAsync<PagedBody<NpcSummaryBody>>("/api/npcs"))!.TotalCount);
     }
 
+    [Theory]
+    [InlineData("str", 31, "Força deve estar entre 1 e 30.")]
+    [InlineData("armorClass", 0, "Classe de Armadura deve estar entre 1 e 30.")]
+    [InlineData("hitPoints", 0, "Pontos de vida deve ser pelo menos 1.")]
+    public async Task Import_ValidationMessagesArePortuguese(string field, int value, string expected)
+    {
+        // No teste no navegador, a importação mostrou "The field Str must be between 1 and 30."
+        var npc = Npc("Rahadin", withStatBlock: true);
+        npc["statBlock"]![field] = value;
+
+        await AssertRejectedWith(FileWith(npc).ToJsonString(), expected);
+    }
+
+    [Fact]
+    public async Task Import_MissingName_HasPortugueseMessage()
+    {
+        var npc = Npc("x");
+        npc["name"] = "";
+
+        await AssertRejectedWith(FileWith(npc).ToJsonString(), "Nome é obrigatório.");
+    }
+
     [Fact]
     public async Task Import_WrongFormat_Returns400WithMessage()
     {

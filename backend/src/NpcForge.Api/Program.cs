@@ -76,7 +76,12 @@ if (app.Environment.IsDevelopment())
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 
-app.UseExceptionHandler();
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    // Erros de requisição do Kestrel (ex.: corpo acima do [RequestSizeLimit] → 413) mantêm o próprio status;
+    // sem isto, viram 500.
+    StatusCodeSelector = ex => ex is BadHttpRequestException bad ? bad.StatusCode : StatusCodes.Status500InternalServerError,
+});
 app.UseStatusCodePages();
 app.UseHttpsRedirection();
 app.UseCors();
