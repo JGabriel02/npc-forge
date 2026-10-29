@@ -22,10 +22,34 @@ public class NpcTransferService(AppDbContext db, TimeProvider time) : INpcTransf
         return npc is null ? null : ToFile([npc]);
     }
 
+    public async Task<int> ImportAsync(string userId, NpcExportFile file, CancellationToken ct)
+    {
+        var now = time.GetUtcNow().UtcDateTime;
+        foreach (var exported in file.Npcs!)
+        {
+            var npc = new Npc
+            {
+                Id = Guid.NewGuid(), UserId = userId, CampaignId = null,
+                Name = exported.Name, Race = exported.Race, Occupation = exported.Occupation,
+                Appearance = exported.Appearance, Personality = exported.Personality,
+                Background = exported.Background, Notes = exported.Notes,
+                CreatedAt = now, UpdatedAt = now,
+            };
+            npc.StatBlock = exported.StatBlock?.ToEntity(npc.Id); // normaliza os dados de vida
+            db.Npcs.Add(npc);
+        }
+
+        // Um único SaveChanges roda numa transação: ou todos os NPCs entram, ou nenhum.
+        await db.SaveChangesAsync(ct);
+        return file.Npcs!.Count;
+    }
+
     private IQueryable<Npc> Owned(string userId) => db.Npcs.AsNoTracking().Where(n => n.UserId == userId);
 
     private NpcExportFile ToFile(IEnumerable<Npc> npcs) => new()
     {
+        Format = NpcExportFile.FormatName,
+        Version = NpcExportFile.CurrentVersion,
         ExportedAt = time.GetUtcNow().UtcDateTime,
         Npcs = npcs.Select(n => n.ToExported()).ToList(),
     };

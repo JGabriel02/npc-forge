@@ -33,6 +33,15 @@ public class NpcsController(INpcService npcs, INpcTransferService transfer, Time
         return file;
     }
 
+    /// <summary>Importa um arquivo de exportação: tudo ou nada, NPCs sem campanha.</summary>
+    [HttpPost("import")]
+    [RequestSizeLimit(5 * 1024 * 1024)]
+    public async Task<IActionResult> Import(NpcExportFile file, CancellationToken ct)
+    {
+        var imported = await transfer.ImportAsync(User.GetUserId(), file, ct);
+        return StatusCode(StatusCodes.Status201Created, new { imported });
+    }
+
     // "attachment" faz o navegador baixar o JSON como arquivo, com este nome.
     private void SetAttachment(string fileName)
         => Response.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = fileName }.ToString();

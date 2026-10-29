@@ -8,4 +8,9 @@ public interface INpcTransferService
 
     /// <summary>Um NPC; <c>null</c> se não for do usuário.</summary>
     Task<NpcExportFile?> ExportOneAsync(string userId, Guid id, CancellationToken ct);
+
+    /// <summary>
+    /// Cria cópias dos NPCs do arquivo (já validado), sem campanha, numa única gravação: entram todos ou nenhum.
+    /// </summary>
+    Task<int> ImportAsync(string userId, NpcExportFile file, CancellationToken ct);
 }
