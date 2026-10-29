@@ -68,6 +68,17 @@ A IA roda **no seu computador** com o [Ollama](https://ollama.com), sem custo e 
 
    Se `http://localhost:8080/api/features` mostrar `{"ai":true}`, está tudo certo.
 
+   **No Linux:** o Ollama instalado só aceita conexões de `127.0.0.1`, e a API dentro do Docker não consegue alcançá-lo (você veria "A IA não está disponível agora." mesmo com `ollama list` funcionando). Faça o Ollama escutar em todas as interfaces e reinicie-o:
+
+   ```bash
+   sudo systemctl edit ollama   # adicione as duas linhas abaixo e salve
+   # [Service]
+   # Environment="OLLAMA_HOST=0.0.0.0"
+   sudo systemctl restart ollama
+   ```
+
+   No Windows e no macOS (Docker Desktop) não é preciso fazer nada.
+
 5. **Sem GPU ou com pouca memória:** use um modelo menor e dê mais tempo para a resposta. No `.env`, `OLLAMA_MODEL=qwen2.5:7b` (ou `qwen2.5:3b`), e no `docker-compose.yml`, `Ai__TimeoutSeconds: 180` no serviço `api`. Não esqueça de rodar `ollama pull` do modelo escolhido.
 
 6. **Sem o Ollama instalado:** dá para rodá-lo dentro do Docker (bem mais lento sem GPU):

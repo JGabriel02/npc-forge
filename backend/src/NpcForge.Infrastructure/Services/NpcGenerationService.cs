@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NpcForge.Core.Ai;
 using NpcForge.Core.Common;
@@ -11,7 +12,8 @@ public class NpcGenerationService(
     IAiUsageService usage,
     IAiProvider ai,
     PromptBuilder prompts,
-    IOptions<AiOptions> options) : INpcGenerationService
+    IOptions<AiOptions> options,
+    ILogger<NpcGenerationService> logger) : INpcGenerationService
 {
     private readonly TimeSpan _timeout = TimeSpan.FromSeconds(options.Value.TimeoutSeconds);
 
@@ -60,6 +62,12 @@ public class NpcGenerationService(
         {
             // Cancelado pelo nosso CancelAfter, não pelo cliente: estourou o tempo.
             return Fail(ServiceError.AiTimeout);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Rede de segurança: nada vindo do provedor ou da resposta do modelo pode virar erro 500.
+            logger.LogWarning(ex, "Falha inesperada ao gerar NPC com IA.");
+            return Fail(ServiceError.AiUnavailable);
         }
         finally
         {

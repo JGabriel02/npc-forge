@@ -53,12 +53,23 @@ public class OllamaProvider(HttpClient http, IOptions<AiOptions> options) : IAiP
                 throw new AiProviderException("A IA não está disponível agora.");
             }
 
-            using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
-            return json.RootElement.TryGetProperty("message", out var message)
-                   && message.TryGetProperty("content", out var content)
-                   && content.GetString() is { } text
-                ? text
-                : throw new AiProviderException("A IA respondeu em um formato inesperado.");
+            try
+            {
+                using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+                if (json.RootElement is { ValueKind: JsonValueKind.Object } root
+                    && root.TryGetProperty("message", out var message)
+                    && message.ValueKind == JsonValueKind.Object
+                    && message.TryGetProperty("content", out var content)
+                    && content.ValueKind == JsonValueKind.String)
+                {
+                    return content.GetString()!;
+                }
+            }
+            catch (JsonException)
+            {
+                // Corpo que não é JSON (ex.: página de erro de um proxy): cai na mensagem abaixo.
+            }
+            throw new AiProviderException("A IA respondeu em um formato inesperado.");
         }
     }
 }

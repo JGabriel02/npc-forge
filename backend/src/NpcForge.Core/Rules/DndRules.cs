@@ -79,6 +79,7 @@ public static partial class DndRules
         => ChallengeRatings.MinBy(cr => (Math.Abs(ChallengeRatingValue(cr) - value), ChallengeRatingValue(cr)))!;
 
     // Sinais aceitos: + e os três "menos" que aparecem em textos: hífen (-), travessão (–) e menos tipográfico (−).
-    [GeneratedRegex(@"^\s*(?<count>\d+)\s*[dD]\s*(?<sides>\d+)\s*(?:(?<sign>[+\-–−])\s*(?<mod>\d+))?\s*$")]
+    // Números com no máximo 4 dígitos (5 no modificador): nenhuma ficha real chega perto, e assim int.Parse nunca estoura.
+    [GeneratedRegex(@"^\s*(?<count>\d{1,4})\s*[dD]\s*(?<sides>\d{1,4})\s*(?:(?<sign>[+\-–−])\s*(?<mod>\d{1,5}))?\s*$")]
     private static partial Regex HitDiceRegex();
 }

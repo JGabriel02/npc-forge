@@ -169,6 +169,27 @@ public class NpcDraftValidatorTests
     }
 
     [Fact]
+    public void Parse_HugeHitDice_IsClearedInsteadOfThrowing()
+    {
+        // "99999999999" não cabe em int: antes, int.Parse estourava e a API respondia 500.
+        var result = Parse(TestDrafts.With(r => r.StatBlock()["hitDice"] = "99999999999d8"));
+
+        Assert.Equal("", result.Draft!.StatBlock!.HitDice);
+        Assert.Contains(result.Warnings, w => w.Contains("Dados de vida"));
+    }
+
+    [Fact]
+    public void Parse_NonFiniteNumber_IsTreatedAsMissing()
+    {
+        var json = TestDrafts.ValidJson.Replace("\"str\": 16", "\"str\": 1e400");
+
+        var result = Parse(json);
+
+        Assert.Equal(10, result.Draft!.StatBlock!.Str);
+        Assert.Contains(result.Warnings, w => w.Contains("Força"));
+    }
+
+    [Fact]
     public void Parse_BlankOptionalTexts_BecomeNull()
     {
         var result = Parse(TestDrafts.With(r => { r["race"] = "  "; r.StatBlock()["skills"] = ""; }));

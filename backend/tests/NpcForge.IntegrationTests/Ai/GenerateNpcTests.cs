@@ -116,6 +116,19 @@ public class GenerateNpcTests : IDisposable
     }
 
     [Fact]
+    public async Task Generate_UnexpectedProviderError_Returns502AndDoesNotConsume()
+    {
+        // Rede de segurança: nenhuma saída estranha do provedor pode virar erro 500.
+        _factory.Fake.EnqueueFailure(new InvalidOperationException("algo inesperado"));
+        var client = await _factory.CreateAuthenticatedClientAsync();
+
+        var response = await GenerateAsync(client, new { prompt = "x", withStatBlock = false });
+
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+        Assert.Equal(0, (await UsageAsync(client)).Used);
+    }
+
+    [Fact]
     public async Task Generate_SlowModel_Returns504AndDoesNotConsume()
     {
         _factory.Fake.EnqueueDelay(TimeSpan.FromSeconds(10));

@@ -242,11 +242,12 @@ public static class NpcDraftValidator
     {
         var value = element?.ValueKind switch
         {
-            JsonValueKind.Number => element.Value.GetDouble(),
+            // TryGetDouble: números como 1e400 não cabem em double (GetDouble lançaria exceção).
+            JsonValueKind.Number => element.Value.TryGetDouble(out var d) ? d : null,
             JsonValueKind.String => ParseDouble(element.Value.GetString()),
             _ => null,
         };
-        return value is null ? null : (int)Math.Round(value.Value);
+        return value is null || !double.IsFinite(value.Value) ? null : (int)Math.Round(value.Value);
     }
 
     private static double? ParseDouble(string? text)

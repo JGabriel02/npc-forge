@@ -82,6 +82,20 @@ public class OllamaProviderTests
         Assert.Contains("ollama pull qwen2.5:14b", ex.Message);
     }
 
+    [Theory]
+    [InlineData("<html>Proxy error</html>")]
+    [InlineData("""{"message": "texto em vez de objeto"}""")]
+    [InlineData("""{"message": {"content": 42}}""")]
+    public async Task UnexpectedSuccessBody_ThrowsAiProviderException(string body)
+    {
+        var (provider, _) = Create(() => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body) });
+
+        var ex = await Assert.ThrowsAsync<AiProviderException>(
+            () => provider.CompleteJsonAsync("s", "u", Schema, CancellationToken.None));
+
+        Assert.Equal("A IA respondeu em um formato inesperado.", ex.Message);
+    }
+
     [Fact]
     public async Task Cancellation_Propagates()
     {
