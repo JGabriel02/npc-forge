@@ -1,0 +1,61 @@
+<section class="page">
+  @switch (state()) {
+    @case ('loading') {
+      <mat-spinner diameter="40" class="spinner" />
+    }
+    @case ('not-found') {
+      <div class="empty-state">
+        <p>Campanha não encontrada.</p>
+        <a matButton routerLink="/campaigns">Voltar para as campanhas</a>
+      </div>
+    }
+    @case ('error') {
+      <p class="load-error" role="alert">Não foi possível carregar a campanha.</p>
+    }
+    @case ('loaded') {
+      @if (campaign(); as c) {
+        <a matButton routerLink="/campaigns" class="back"><mat-icon>arrow_back</mat-icon> Campanhas</a>
+
+        <header class="page-header">
+          <h1>{{ c.name }}</h1>
+          <div class="actions">
+            <button matButton="outlined" type="button" (click)="edit()"><mat-icon>edit</mat-icon> Editar</button>
+            <button matButton type="button" class="danger" (click)="remove()"><mat-icon>delete</mat-icon> Excluir</button>
+          </div>
+        </header>
+
+        @if (c.description) {
+          <p class="description">{{ c.description }}</p>
+        }
+        @if (c.setting) {
+          <aside class="setting">
+            <h2>Cenário e tom</h2>
+            <p>{{ c.setting }}</p>
+          </aside>
+        }
+
+        <div class="npcs-header">
+          <h2>NPCs ({{ npcs().length }})</h2>
+          <a matButton="filled" routerLink="/npcs/new" [queryParams]="{ campaignId: c.id }">
+            <mat-icon>add</mat-icon> Novo NPC
+          </a>
+        </div>
+
+        @if (npcs().length === 0) {
+          <p class="empty-state">Nenhum NPC nesta campanha ainda.</p>
+        } @else {
+          <mat-nav-list>
+            @for (npc of npcs(); track npc.id) {
+              <a mat-list-item [routerLink]="['/npcs', npc.id]">
+                <span matListItemTitle>{{ npc.name }}</span>
+                <span matListItemLine>
+                  {{ subtitle(npc) }}
+                </span>
+              </a>
+            }
+          </mat-nav-list>
+        }
+      }
+    }
+  }
+</section>
