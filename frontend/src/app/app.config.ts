@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
       inject(MatIconRegistry).setDefaultFontSetClass('material-symbols-outlined');
       const auth = inject(AuthService);
       if (!auth.getToken()) return;
-      return auth.loadUser().pipe(catchError(() => of(auth.logout())));
+      return auth.loadUser().pipe(catchError(() => of(auth.expireSession())));
     }),
   ],
 };

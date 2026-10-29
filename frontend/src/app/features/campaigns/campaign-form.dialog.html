@@ -13,30 +13,20 @@
     <mat-form-field appearance="outline">
       <mat-label>Nome</mat-label>
       <input matInput formControlName="name" cdkFocusInitial />
-      @if (form.controls.name.hasError('required')) {
-        <mat-error>Informe o nome.</mat-error>
-      } @else if (form.controls.name.hasError('maxlength')) {
-        <mat-error>Máximo de 100 caracteres.</mat-error>
-      } @else if (form.controls.name.hasError('server')) {
-        <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
-      }
+      <mat-error>{{ fieldError(form.controls.name) }}</mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Descrição</mat-label>
       <textarea matInput formControlName="description" rows="3"></textarea>
-      @if (form.controls.description.hasError('maxlength')) {
-        <mat-error>Máximo de 2000 caracteres.</mat-error>
-      }
+      <mat-error>{{ fieldError(form.controls.description) }}</mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Cenário e tom</mat-label>
       <textarea matInput formControlName="setting" rows="3" placeholder="Ex.: terror gótico em Barovia, tom sombrio"></textarea>
       <mat-hint>Usado como contexto pela IA ao gerar NPCs desta campanha.</mat-hint>
-      @if (form.controls.setting.hasError('maxlength')) {
-        <mat-error>Máximo de 2000 caracteres.</mat-error>
-      }
+      <mat-error>{{ fieldError(form.controls.setting) }}</mat-error>
     </mat-form-field>
   </mat-dialog-content>
 

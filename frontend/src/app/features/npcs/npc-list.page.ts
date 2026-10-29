@@ -65,7 +65,7 @@ export class NpcListPage {
     return f.search !== '' || f.campaignId !== '' || f.type !== 'all';
   });
 
-  protected readonly campaigns = toSignal(inject(CampaignsApi).list(), { initialValue: [] as CampaignDto[] });
+  protected readonly campaigns = toSignal(inject(CampaignsApi).listOrEmpty(), { initialValue: [] as CampaignDto[] });
   protected readonly result = signal<PagedResult<NpcSummaryDto> | null>(null);
   protected readonly loading = signal(true);
   protected readonly loadError = signal(false);

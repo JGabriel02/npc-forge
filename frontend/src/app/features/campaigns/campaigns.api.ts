@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CampaignDto, CampaignRequest } from '../../core/api/api.models';
 
@@ -12,6 +12,11 @@ export class CampaignsApi {
 
   list(): Observable<CampaignDto[]> {
     return this.http.get<CampaignDto[]>(this.url);
+  }
+
+  /** Para selects de campanha: se a lista falhar, a tela segue funcionando com "Sem campanha". */
+  listOrEmpty(): Observable<CampaignDto[]> {
+    return this.list().pipe(catchError(() => of([])));
   }
 
   get(id: string): Observable<CampaignDto> {

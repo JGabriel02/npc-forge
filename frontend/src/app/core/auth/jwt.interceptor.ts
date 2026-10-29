@@ -24,7 +24,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   return next(request).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse && error.status === 401 && !isAuthEndpoint) {
-        auth.logout();
+        auth.expireSession();
       }
       return throwError(() => error);
     }),

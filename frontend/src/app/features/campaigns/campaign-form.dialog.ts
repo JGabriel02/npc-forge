@@ -5,7 +5,8 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { CampaignDto, CampaignRequest } from '../../core/api/api.models';
-import { applyServerErrors, problemFrom } from '../../core/api/problem-details';
+import { errorMessages } from '../../core/api/problem-details';
+import { fieldError } from '../../shared/field-error';
 import { CampaignsApi } from './campaigns.api';
 
 export interface CampaignFormDialogData {
@@ -36,6 +37,7 @@ export class CampaignFormDialog {
   });
   protected readonly saving = signal(false);
   protected readonly messages = signal<string[]>([]);
+  protected readonly fieldError = fieldError;
 
   protected save(): void {
     if (this.form.invalid) {
@@ -56,8 +58,7 @@ export class CampaignFormDialog {
     save$.subscribe({
       next: (saved) => this.dialogRef.close(saved),
       error: (error: unknown) => {
-        const problem = problemFrom(error);
-        this.messages.set(problem ? applyServerErrors(this.form, problem) : ['Não foi possível salvar.']);
+        this.messages.set(errorMessages(this.form, error));
         this.saving.set(false);
       },
     });

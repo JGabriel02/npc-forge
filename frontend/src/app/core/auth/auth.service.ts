@@ -53,12 +53,27 @@ export class AuthService {
     return this.http.get<MeResponse>(`${this.api}/auth/me`).pipe(tap((me) => this.currentUser.set(me)));
   }
 
-  logout(): void {
+  /**
+   * "Sair" pelo usuário: navega primeiro e só encerra a sessão se a navegação acontecer.
+   * Se ele cancelar ("Descartar as alterações?"), continua logado na página onde estava.
+   */
+  async logout(): Promise<void> {
+    if (await this.router.navigateByUrl('/login')) {
+      this.clearSession();
+    }
+  }
+
+  /** Sessão inválida (401 da API): encerra na hora, mesmo que a navegação seja interrompida. */
+  expireSession(): void {
+    this.clearSession();
+    void this.router.navigateByUrl('/login');
+  }
+
+  private clearSession(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(EXPIRES_KEY);
     this.session.set(null);
     this.currentUser.set(null);
-    void this.router.navigateByUrl('/login');
   }
 
   private saveSession({ token, expiresAt }: LoginResponse): void {

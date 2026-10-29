@@ -64,7 +64,7 @@ describe('jwtInterceptor', () => {
   it('logs out on 401 from an API call', () => {
     login();
     setup();
-    const logout = vi.spyOn(auth, 'logout').mockImplementation(() => {});
+    const logout = vi.spyOn(auth, 'expireSession').mockImplementation(() => {});
 
     client.get(`${api}/campaigns`).subscribe({ error: () => {} });
     http.expectOne(`${api}/campaigns`).flush(null, { status: 401, statusText: 'Unauthorized' });
@@ -74,7 +74,7 @@ describe('jwtInterceptor', () => {
 
   it('does not log out on 401 from /auth/login', () => {
     setup();
-    const logout = vi.spyOn(auth, 'logout').mockImplementation(() => {});
+    const logout = vi.spyOn(auth, 'expireSession').mockImplementation(() => {});
 
     client.post(`${api}/auth/login`, {}).subscribe({ error: () => {} });
     http.expectOne(`${api}/auth/login`).flush(

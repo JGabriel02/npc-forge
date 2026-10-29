@@ -7,7 +7,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { filter, switchMap } from 'rxjs';
 import { CampaignDto, NpcDto } from '../../core/api/api.models';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/confirm.dialog';
+import { ignoreNotFound } from '../../shared/ignore-not-found';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import { NpcsApi } from './npcs.api';
 import { StatBlockViewComponent } from './stat-block-view.component';
@@ -26,6 +28,7 @@ export class NpcViewPage {
   private readonly campaignsApi = inject(CampaignsApi);
   private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly id = input.required<string>();
 
@@ -61,9 +64,12 @@ export class NpcViewPage {
       .afterClosed()
       .pipe(
         filter(Boolean),
-        switchMap(() => this.npcsApi.delete(npc.id)),
+        switchMap(() => this.npcsApi.delete(npc.id).pipe(ignoreNotFound())),
       )
-      .subscribe(() => void this.router.navigateByUrl('/npcs'));
+      .subscribe({
+        next: () => void this.router.navigateByUrl('/npcs'),
+        error: () => this.snackBar.open('Não foi possível excluir o NPC. Tente novamente.', 'Fechar', { duration: 6000 }),
+      });
   }
 
   private load(id: string): void {

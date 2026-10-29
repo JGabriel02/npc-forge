@@ -64,17 +64,42 @@ describe('AuthService', () => {
     expect(auth.isLoggedIn()).toBe(true);
   });
 
-  it('logout clears storage and user and navigates to /login', () => {
+  it('logout navigates to /login and then clears storage and user', async () => {
     localStorage.setItem('npcforge.token', 'jwt-123');
     localStorage.setItem('npcforge.expiresAt', future());
     const auth = setup();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    auth.logout();
+    await auth.logout();
 
+    expect(navigate).toHaveBeenCalledWith('/login');
     expect(localStorage.getItem('npcforge.token')).toBeNull();
     expect(localStorage.getItem('npcforge.expiresAt')).toBeNull();
     expect(auth.user()).toBeNull();
+    expect(auth.isLoggedIn()).toBe(false);
+  });
+
+  it('logout keeps the session when the user cancels leaving a page with unsaved changes', async () => {
+    localStorage.setItem('npcforge.token', 'jwt-123');
+    localStorage.setItem('npcforge.expiresAt', future());
+    const auth = setup();
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(false);
+
+    await auth.logout();
+
+    expect(localStorage.getItem('npcforge.token')).toBe('jwt-123');
+    expect(auth.isLoggedIn()).toBe(true);
+  });
+
+  it('expireSession clears the session even before navigating', () => {
+    localStorage.setItem('npcforge.token', 'jwt-123');
+    localStorage.setItem('npcforge.expiresAt', future());
+    const auth = setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(false);
+
+    auth.expireSession();
+
+    expect(localStorage.getItem('npcforge.token')).toBeNull();
     expect(auth.isLoggedIn()).toBe(false);
     expect(navigate).toHaveBeenCalledWith('/login');
   });

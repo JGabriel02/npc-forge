@@ -7,6 +7,7 @@ export function fieldError(control: AbstractControl): string | null {
 
   if (errors['server']) return errors['server'];
   if (errors['required']) return 'Obrigatório.';
+  if (errors['email']) return 'E-mail inválido.';
   if (errors['maxlength']) return `Máximo de ${errors['maxlength'].requiredLength} caracteres.`;
   if (errors['min']) return `Mínimo ${errors['min'].min}.`;
   if (errors['max']) return `Máximo ${errors['max'].max}.`;

@@ -2,6 +2,42 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
 import { ProblemDetails } from './api.models';
 
+// Erros do ASP.NET Identity (cadastro) chegam em inglês; estes são os que o app pode provocar.
+const IDENTITY_MESSAGES: Record<string, string> = {
+  PasswordRequiresDigit: 'A senha precisa ter pelo menos um número.',
+  PasswordRequiresLower: 'A senha precisa ter pelo menos uma letra minúscula.',
+  PasswordTooShort: 'A senha precisa ter pelo menos 8 caracteres.',
+  DuplicateUserName: 'Este e-mail já está cadastrado.',
+  DuplicateEmail: 'Este e-mail já está cadastrado.',
+  InvalidEmail: 'E-mail inválido.',
+};
+
+/**
+ * Converte qualquer erro de uma chamada à API em mensagens em português:
+ * erros de campo vão para o formulário; o resto volta para exibir no topo.
+ */
+export function errorMessages(form: AbstractControl, error: unknown): string[] {
+  if (error instanceof HttpErrorResponse) {
+    if (error.status === 0) return ['Não foi possível conectar à API.'];
+    if (error.status >= 500) return ['Erro no servidor. Tente novamente em instantes.'];
+  }
+
+  const problem = problemFrom(error);
+  if (!problem) return ['Não foi possível concluir a operação.'];
+  if (problem.status === 404 && !problem.errors) return ['Não encontrado. Talvez tenha sido excluído.'];
+
+  const translated = translateIdentityErrors(problem);
+  return [...new Set(applyServerErrors(form, translated))];
+}
+
+function translateIdentityErrors(problem: ProblemDetails): ProblemDetails {
+  if (!problem.errors) return problem;
+  const errors = Object.fromEntries(
+    Object.entries(problem.errors).map(([key, messages]) => [key, IDENTITY_MESSAGES[key] ? [IDENTITY_MESSAGES[key]] : messages]),
+  );
+  return { ...problem, errors };
+}
+
 /** Extrai o corpo ProblemDetails de um erro HTTP (ou null se não for um). */
 export function problemFrom(error: unknown): ProblemDetails | null {
   if (error instanceof HttpErrorResponse && error.error && typeof error.error === 'object') {

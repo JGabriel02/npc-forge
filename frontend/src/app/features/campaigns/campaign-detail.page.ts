@@ -8,7 +8,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { filter, switchMap } from 'rxjs';
 import { CampaignDto, NpcSummaryDto } from '../../core/api/api.models';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/confirm.dialog';
+import { ignoreNotFound } from '../../shared/ignore-not-found';
 import { NpcsApi } from '../npcs/npcs.api';
 import { CampaignFormDialog, CampaignFormDialogData } from './campaign-form.dialog';
 import { CampaignsApi } from './campaigns.api';
@@ -27,6 +29,7 @@ export class CampaignDetailPage {
   private readonly npcsApi = inject(NpcsApi);
   private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
 
   /** Vem do parâmetro :id da rota. */
   readonly id = input.required<string>();
@@ -67,9 +70,12 @@ export class CampaignDetailPage {
       .afterClosed()
       .pipe(
         filter(Boolean),
-        switchMap(() => this.campaignsApi.delete(campaign.id)),
+        switchMap(() => this.campaignsApi.delete(campaign.id).pipe(ignoreNotFound())),
       )
-      .subscribe(() => void this.router.navigateByUrl('/campaigns'));
+      .subscribe({
+        next: () => void this.router.navigateByUrl('/campaigns'),
+        error: () => this.snackBar.open('Não foi possível excluir a campanha. Tente novamente.', 'Fechar', { duration: 6000 }),
+      });
   }
 
   private load(id: string): void {

@@ -13,7 +13,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CanDeactivateFn, Router, RouterLink } from '@angular/router';
 import { Observable, catchError, concatMap, of, throwError } from 'rxjs';
 import { CampaignDto, NpcDto } from '../../core/api/api.models';
-import { applyServerErrors, problemFrom } from '../../core/api/problem-details';
+import { errorMessages } from '../../core/api/problem-details';
 import { fieldError } from '../../shared/field-error';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import {
@@ -54,7 +54,7 @@ export class NpcFormPage {
 
   protected readonly form = buildNpcForm(this.fb);
   protected readonly fieldError = fieldError;
-  protected readonly campaigns = toSignal(inject(CampaignsApi).list(), { initialValue: [] as CampaignDto[] });
+  protected readonly campaigns = toSignal(inject(CampaignsApi).listOrEmpty(), { initialValue: [] as CampaignDto[] });
 
   protected readonly state = signal<PageState>('loading');
   protected readonly original = signal<NpcDto | null>(null);
@@ -122,9 +122,8 @@ export class NpcFormPage {
           void this.router.navigate(['/npcs', npc!.id]);
         },
         error: ({ error, target }: StepError) => {
-          const problem = problemFrom(error);
-          this.messages.set(problem ? applyServerErrors(target, problem) : ['Não foi possível salvar.']);
-          if (problem?.errors && this.messages().length === 0) this.messages.set(['Corrija os campos destacados.']);
+          const messages = errorMessages(target, error);
+          this.messages.set(messages.length ? messages : ['Corrija os campos destacados.']);
           this.saving.set(false);
           // O botão Salvar fica no rodapé; sobe para o usuário ver as mensagens.
           window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -6,7 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
-import { applyServerErrors, problemFrom } from '../../core/api/problem-details';
+import { errorMessages } from '../../core/api/problem-details';
+import { fieldError } from '../../shared/field-error';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -26,10 +27,11 @@ export class RegisterPage {
   protected readonly form = inject(NonNullableFormBuilder).group({
     displayName: ['', [Validators.required, Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/(?=.*[a-z])(?=.*\d)/)]], // mesmas regras do Identity no backend
   });
   protected readonly submitting = signal(false);
   protected readonly messages = signal<string[]>([]);
+  protected readonly fieldError = fieldError;
 
   protected submit(): void {
     if (this.form.invalid) {
@@ -44,9 +46,7 @@ export class RegisterPage {
     this.auth.register(email, password, displayName).subscribe({
       next: () => void this.router.navigateByUrl('/campaigns'),
       error: (error: unknown) => {
-        const problem = problemFrom(error);
-        // Erros de senha do Identity vêm com chaves como "PasswordRequiresDigit": não casam com campo, viram mensagem geral.
-        this.messages.set(problem ? applyServerErrors(this.form, problem) : ['Não foi possível conectar à API.']);
+        this.messages.set(errorMessages(this.form, error));
         this.submitting.set(false);
       },
     });
