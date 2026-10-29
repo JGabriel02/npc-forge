@@ -12,7 +12,10 @@ public static class NpcMapping
         n.StatBlock?.ToDto(), n.CreatedAt, n.UpdatedAt);
 
     public static StatBlockDto ToDto(this StatBlock s) => new(
-        s.Size, s.CreatureType, s.Alignment, s.ArmorClass, s.HitPoints, s.HitDice, s.Speed,
+        s.Size, s.CreatureType, s.Alignment, s.ArmorClass, s.HitPoints,
+        // Normaliza também na leitura: fichas gravadas antes no formato "4d8+4" saem como "4d8 + 4".
+        DndRules.IsValidHitDice(s.HitDice) ? DndRules.NormalizeHitDice(s.HitDice) : s.HitDice,
+        s.Speed,
         s.Str, s.Dex, s.Con, s.Int, s.Wis, s.Cha, s.ChallengeRating,
         s.SavingThrows, s.Skills, s.Senses, s.Languages,
         s.Traits.Select(ToDto).ToList(),
@@ -27,7 +30,7 @@ public static class NpcMapping
     {
         NpcId = npcId,
         Size = r.Size!.Value, CreatureType = r.CreatureType, Alignment = r.Alignment,
-        ArmorClass = r.ArmorClass, HitPoints = r.HitPoints, HitDice = r.HitDice, Speed = r.Speed,
+        ArmorClass = r.ArmorClass, HitPoints = r.HitPoints, HitDice = DndRules.NormalizeHitDice(r.HitDice), Speed = r.Speed,
         Str = r.Str, Dex = r.Dex, Con = r.Con, Int = r.Int, Wis = r.Wis, Cha = r.Cha,
         ChallengeRating = r.ChallengeRating,
         SavingThrows = r.SavingThrows, Skills = r.Skills, Senses = r.Senses, Languages = r.Languages,

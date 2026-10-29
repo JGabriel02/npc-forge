@@ -23,8 +23,28 @@ public static partial class DndRules
         return value < 5 ? 2 : 2 + (value - 1) / 4;
     }
 
+    // Aceita "2d8+2" e também o formato do Livro do Jogador 2024: "2d8 + 2", "1d4 – 1" (travessão).
     public static bool IsValidHitDice(string? hitDice) => hitDice is not null && HitDiceRegex().IsMatch(hitDice);
 
-    [GeneratedRegex(@"^\d+d\d+([+-]\d+)?$")]
+    /// <summary>Padroniza no formato do livro: "2d8 + 2", "1d4 – 1" ou "3d8" (modificador 0 é omitido).</summary>
+    public static string NormalizeHitDice(string hitDice)
+    {
+        var match = HitDiceRegex().Match(hitDice);
+        if (!match.Success)
+            throw new ArgumentException($"Dados de vida inválidos: '{hitDice}'.", nameof(hitDice));
+
+        var dice = $"{int.Parse(match.Groups["count"].Value)}d{int.Parse(match.Groups["sides"].Value)}";
+        if (!match.Groups["sign"].Success)
+            return dice;
+
+        var modifier = int.Parse(match.Groups["mod"].Value);
+        if (modifier == 0)
+            return dice;
+
+        return match.Groups["sign"].Value == "+" ? $"{dice} + {modifier}" : $"{dice} – {modifier}";
+    }
+
+    // Sinais aceitos: + e os três "menos" que aparecem em textos: hífen (-), travessão (–) e menos tipográfico (−).
+    [GeneratedRegex(@"^\s*(?<count>\d+)\s*[dD]\s*(?<sides>\d+)\s*(?:(?<sign>[+\-–−])\s*(?<mod>\d+))?\s*$")]
     private static partial Regex HitDiceRegex();
 }
