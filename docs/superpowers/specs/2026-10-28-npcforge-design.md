@@ -257,7 +257,7 @@ Decisão: uma chave de configuração em vez de dois branches permanentes, para 
    - ND fora da lista → ND válido mais próximo;
    - `HitDice` em formato inválido → removido, com aviso;
    - campos de texto acima do limite → truncados.
-4. Timeout configurável (`Ai:TimeoutSeconds`, padrão 60) → 504. Se o cliente cancelar a requisição, o `CancellationToken` é propagado até o provedor.
+4. Timeout configurável (`Ai:TimeoutSeconds`, padrão 120 — medido no teste real: ~35 s por geração com o modelo já carregado e mais de 60 s na primeira, que carrega o modelo na GPU) → 504. O pedido ao Ollama usa `keep_alive: 30m` para o modelo continuar carregado entre gerações. Se o cliente cancelar a requisição, o `CancellationToken` é propagado até o provedor.
 
 ### Limite diário de gerações
 

@@ -40,6 +40,8 @@ public class OllamaProviderTests
         Assert.Equal("qwen2.5:14b", root.GetProperty("model").GetString());
         Assert.False(root.GetProperty("stream").GetBoolean());
         Assert.Equal(JsonValueKind.Object, root.GetProperty("format").ValueKind);
+        // Mantém o modelo na GPU entre gerações: a primeira, "a frio", passou de 60 s no teste real.
+        Assert.Equal("30m", root.GetProperty("keep_alive").GetString());
         var messages = root.GetProperty("messages").EnumerateArray().ToList();
         Assert.Equal(["system", "user"], messages.Select(m => m.GetProperty("role").GetString()));
         Assert.Equal("usuário", messages[1].GetProperty("content").GetString());

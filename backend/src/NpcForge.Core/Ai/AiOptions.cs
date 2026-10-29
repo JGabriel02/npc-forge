@@ -12,8 +12,12 @@ public class AiOptions
 
     public string Provider { get; set; } = "Ollama";
 
+    /// <summary>
+    /// 120 s: com o modelo já carregado, uma geração com ficha leva ~35 s numa GPU de 16 GB;
+    /// a primeira, que carrega o modelo, passou de 60 s no teste real.
+    /// </summary>
     [Range(5, 600)]
-    public int TimeoutSeconds { get; set; } = 60;
+    public int TimeoutSeconds { get; set; } = 120;
 
     [Range(1, 1000)]
     public int DailyGenerationLimit { get; set; } = 5;

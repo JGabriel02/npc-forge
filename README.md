@@ -2,7 +2,9 @@
 
 Aplicação web para mestres de RPG criarem e organizarem NPCs de D&D 5e, com ou sem ficha de combate, agrupados em campanhas, e com uma IA integrada que gera e sugere conteúdo.
 
-> Projeto de portfólio e aprendizado em **.NET** e **Angular**. A IA chega nas próximas fases (veja [Roadmap](#roadmap)).
+> Projeto de portfólio e aprendizado em **.NET** e **Angular**.
+>
+> A IA é **opcional** e vem **desligada**: sem ela, o app funciona normalmente com criação manual de NPCs (é assim que roda a versão web). Para gerar NPCs com IA no seu computador, siga [Rodando com IA localmente](#rodando-com-ia-localmente).
 
 ## Stack
 
@@ -33,6 +35,54 @@ Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop
    ```
 
    Abra `http://localhost:4200` e crie uma conta.
+
+## Rodando com IA localmente
+
+Com a IA ligada, a tela **Novo NPC** ganha o card **"✨ Gerar com IA"**: você descreve o NPC ("anão ferreiro rabugento, guarda um segredo") e a IA preenche o formulário, com ou sem ficha de combate. Nada é salvo até você revisar e clicar em Salvar. Cada usuário tem **5 gerações por dia**.
+
+A IA roda **no seu computador** com o [Ollama](https://ollama.com), sem custo e sem enviar dados para fora.
+
+1. **Instale o Ollama** pelo site oficial e confirme no terminal:
+
+   ```bash
+   ollama --version
+   ```
+
+2. **Baixe o modelo** (cerca de 9 GB; fica rápido com uma GPU de ~10 GB de VRAM ou mais):
+
+   ```bash
+   ollama pull qwen2.5:14b
+   ```
+
+3. **Ligue a IA** no `.env`:
+
+   ```bash
+   AI_ENABLED=true
+   ```
+
+4. **Suba o app de novo** e abra "Novo NPC":
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+   Se `http://localhost:8080/api/features` mostrar `{"ai":true}`, está tudo certo.
+
+5. **Sem GPU ou com pouca memória:** use um modelo menor e dê mais tempo para a resposta. No `.env`, `OLLAMA_MODEL=qwen2.5:7b` (ou `qwen2.5:3b`), e no `docker-compose.yml`, `Ai__TimeoutSeconds: 180` no serviço `api`. Não esqueça de rodar `ollama pull` do modelo escolhido.
+
+6. **Sem o Ollama instalado:** dá para rodá-lo dentro do Docker (bem mais lento sem GPU):
+
+   ```bash
+   docker compose --profile ollama-docker up -d
+   docker compose exec ollama ollama pull qwen2.5:14b
+   ```
+
+   e no `.env`: `OLLAMA_BASE_URL=http://ollama:11434`.
+
+7. **Problemas comuns:**
+   - *"A IA não está disponível agora."* — o Ollama não está rodando. Abra o aplicativo do Ollama (ou rode `ollama serve`) e confira com `ollama list`.
+   - *"O modelo ... não está instalado no Ollama"* — rode o `ollama pull` do modelo que está no `.env`.
+   - *"A IA demorou demais para responder."* — modelo pesado para a sua máquina; use um menor (passo 5).
 
 ### Rodando a API fora do Docker
 

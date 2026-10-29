@@ -28,8 +28,27 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Host=postgres;Database=npcforge;Username=npcforge;Password=${POSTGRES_PASSWORD}
       Jwt__Key: ${JWT_KEY:?defina JWT_KEY no .env}
+      # IA: desligada por padrão. Para ligar, veja "Rodando com IA localmente" no README.
+      Ai__Enabled: ${AI_ENABLED:-false}
+      Ai__Ollama__Model: ${OLLAMA_MODEL:-qwen2.5:14b}
+      # Por padrão, o Ollama instalado no próprio computador (fora do Docker, com acesso à GPU).
+      Ai__Ollama__BaseUrl: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8080:8080"
 
+  # Alternativa para quem não tem o Ollama instalado (mais lento sem GPU):
+  #   docker compose --profile ollama-docker up -d
+  # e no .env: OLLAMA_BASE_URL=http://ollama:11434
+  ollama:
+    image: ollama/ollama
+    profiles: ["ollama-docker"]
+    volumes:
+      - ollama-models:/root/.ollama
+    ports:
+      - "11434:11434"
+
 volumes:
   postgres-data:
+  ollama-models:

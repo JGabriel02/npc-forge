@@ -21,6 +21,9 @@ public class OllamaProvider(HttpClient http, IOptions<AiOptions> options) : IAiP
         {
             ["model"] = _model,
             ["stream"] = false,
+            // Mantém o modelo carregado na GPU entre gerações (o padrão do Ollama é 5 min);
+            // carregá-lo de novo custa dezenas de segundos.
+            ["keep_alive"] = "30m",
             ["format"] = JsonNode.Parse(jsonSchema),
             ["options"] = new JsonObject { ["temperature"] = 0.8 },
             ["messages"] = new JsonArray

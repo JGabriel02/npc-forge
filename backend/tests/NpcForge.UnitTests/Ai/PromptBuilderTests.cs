@@ -19,6 +19,19 @@ public class PromptBuilderTests
     }
 
     [Fact]
+    public void SystemPrompt_AsksForPortugueseValuesInEnglishNamedFields()
+    {
+        // No teste real, o modelo respondeu "Humanoid", "Neutral" e "1d8 + 3 Con bonus":
+        // os nomes dos campos em inglês o levavam a escrever os valores em inglês.
+        var system = _builder.BuildGenerateNpc("x", null, true, null).System;
+
+        Assert.Contains("\"humanoide (anão)\"", system);
+        Assert.Contains("\"leal e neutro\"", system);
+        Assert.Contains("\"1d8 + 3 Contundente\"", system);
+        Assert.Contains("nomes dos campos", system);
+    }
+
+    [Fact]
     public void BuildGenerateNpc_WithoutSetting_SaysNotInformed()
         => Assert.Contains("não informado", _builder.BuildGenerateNpc("taverneira", null, false, null).User);
 
