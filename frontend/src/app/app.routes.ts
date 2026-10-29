@@ -28,6 +28,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/campaigns/campaign-list.page').then((m) => m.CampaignListPage),
       },
       {
+        path: 'npcs',
+        title: 'NPCs · NpcForge',
+        loadComponent: () => import('./features/npcs/npc-list.page').then((m) => m.NpcListPage),
+      },
+      {
         path: 'campaigns/:id',
         title: 'Campanha · NpcForge',
         loadComponent: () => import('./features/campaigns/campaign-detail.page').then((m) => m.CampaignDetailPage),
