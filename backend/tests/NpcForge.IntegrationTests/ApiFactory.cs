@@ -21,6 +21,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", _postgres.GetConnectionString());
         builder.UseSetting("Jwt:Key", TestJwtKey);
+        builder.UseSetting("Ai:Enabled", "true");
     }
 
     public async Task InitializeAsync()

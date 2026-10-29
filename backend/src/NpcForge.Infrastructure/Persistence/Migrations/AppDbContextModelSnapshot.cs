@@ -154,6 +154,22 @@ namespace NpcForge.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("NpcForge.Core.Entities.AiUsage", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("GenerationCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserId", "Date");
+
+                    b.ToTable("AiUsages");
+                });
+
             modelBuilder.Entity("NpcForge.Core.Entities.Campaign", b =>
                 {
                     b.Property<Guid>("Id")
@@ -439,6 +455,15 @@ namespace NpcForge.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("NpcForge.Infrastructure.Identity.AppUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NpcForge.Core.Entities.AiUsage", b =>
                 {
                     b.HasOne("NpcForge.Infrastructure.Identity.AppUser", null)
                         .WithMany()
