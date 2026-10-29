@@ -1,9 +1,9 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  CreateNpcRequest, NpcDto, NpcSummaryDto, PagedResult, StatBlockRequest, UpdateNpcRequest,
+  CreateNpcRequest, NpcDto, NpcExportFile, NpcSummaryDto, PagedResult, StatBlockRequest, UpdateNpcRequest,
 } from '../../core/api/api.models';
 
 export interface NpcQuery {
@@ -27,6 +27,23 @@ export class NpcsApi {
     if (query.search?.trim()) params = params.set('search', query.search.trim());
     if (query.hasStatBlock !== undefined) params = params.set('hasStatBlock', query.hasStatBlock);
     return this.http.get<PagedResult<NpcSummaryDto>>(this.url, { params });
+  }
+
+  /** Arquivo com todos os NPCs dos filtros (todas as páginas). */
+  exportList(filters: Omit<NpcQuery, 'page' | 'pageSize'>): Observable<HttpResponse<Blob>> {
+    let params = new HttpParams();
+    if (filters.campaignId) params = params.set('campaignId', filters.campaignId);
+    if (filters.search?.trim()) params = params.set('search', filters.search.trim());
+    if (filters.hasStatBlock !== undefined) params = params.set('hasStatBlock', filters.hasStatBlock);
+    return this.http.get(`${this.url}/export`, { params, observe: 'response', responseType: 'blob' });
+  }
+
+  exportOne(id: string): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.url}/${id}/export`, { observe: 'response', responseType: 'blob' });
+  }
+
+  importFile(file: NpcExportFile): Observable<{ imported: number }> {
+    return this.http.post<{ imported: number }>(`${this.url}/import`, file);
   }
 
   get(id: string): Observable<NpcDto> {
