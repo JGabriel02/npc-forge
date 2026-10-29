@@ -1,0 +1,77 @@
+<section class="page">
+  @switch (state()) {
+    @case ('loading') {
+      <mat-spinner diameter="40" class="spinner" />
+    }
+    @case ('not-found') {
+      <div class="empty-state">
+        <p>NPC não encontrado.</p>
+        <a matButton routerLink="/npcs">Voltar para os NPCs</a>
+      </div>
+    }
+    @case ('error') {
+      <p class="load-error" role="alert">Não foi possível carregar o NPC.</p>
+    }
+    @case ('loaded') {
+      @if (npc(); as n) {
+        <a matButton routerLink="/npcs" class="back"><mat-icon>arrow_back</mat-icon> NPCs</a>
+
+        <header class="page-header">
+          <div>
+            <h1>{{ n.name }}</h1>
+            @if (subtitle()) {
+              <p class="subtitle">{{ subtitle() }}</p>
+            }
+            <p class="campaign">
+              @if (n.campaignId) {
+                <mat-icon inline>flag</mat-icon>
+                <a [routerLink]="['/campaigns', n.campaignId]">{{ campaign()?.name ?? 'Campanha' }}</a>
+              } @else {
+                Sem campanha
+              }
+            </p>
+          </div>
+          <div class="actions">
+            <a matButton="outlined" [routerLink]="['/npcs', n.id, 'edit']"><mat-icon>edit</mat-icon> Editar</a>
+            <button matButton type="button" class="danger" (click)="remove()"><mat-icon>delete</mat-icon> Excluir</button>
+          </div>
+        </header>
+
+        <div class="layout" [class.with-sheet]="n.statBlock">
+          <div class="story">
+            @for (section of sections(); track section.title) {
+              <section>
+                <h2>{{ section.title }}</h2>
+                <p>{{ section.text }}</p>
+              </section>
+            } @empty {
+              @if (!n.notes) {
+                <p class="muted">Sem descrição ainda. Use "Editar" para dar vida a este NPC.</p>
+              }
+            }
+
+            @if (n.notes) {
+              <aside class="notes">
+                <h2><mat-icon inline>lock</mat-icon> Anotações do mestre</h2>
+                <p>{{ n.notes }}</p>
+              </aside>
+            }
+          </div>
+
+          <div class="sheet">
+            @if (n.statBlock; as statBlock) {
+              <app-stat-block-view [name]="n.name" [statBlock]="statBlock" />
+            } @else {
+              <div class="no-sheet">
+                <p>NPC narrativo — sem ficha de combate.</p>
+                <a matButton="outlined" [routerLink]="['/npcs', n.id, 'edit']" [queryParams]="{ withStatBlock: 1 }">
+                  <mat-icon>swords</mat-icon> Adicionar ficha
+                </a>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+</section>

@@ -1,0 +1,115 @@
+// Inspirado no visual dos stat blocks impressos de D&D 5e: pergaminho, vermelho-escuro, serifa.
+$parchment: #fdf1dc;
+$ink: #1d1a17;
+$crimson: #922610;
+
+:host {
+  display: block;
+}
+
+.stat-block {
+  max-width: 720px;
+  padding: 20px 24px 24px;
+  border-top: 4px solid #e69a28;
+  border-bottom: 4px solid #e69a28;
+  background: $parchment;
+  box-shadow: 0 0 1.5em rgb(0 0 0 / 0.25);
+  color: $ink;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.name {
+  margin: 0;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 26px;
+  font-variant: small-caps;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: $crimson;
+}
+
+.type {
+  margin: 0;
+  font-style: italic;
+}
+
+// Régua afunilada característica dos stat blocks.
+.rule {
+  height: 5px;
+  margin: 10px 0;
+  background: $crimson;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+dl {
+  margin: 0;
+}
+
+.props {
+  color: $crimson;
+
+  div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 6px;
+  }
+
+  dt {
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.abilities {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  color: $crimson;
+  text-align: center;
+
+  dt {
+    font-weight: 700;
+
+    abbr {
+      text-decoration: none;
+    }
+  }
+
+  dd {
+    margin: 0;
+    white-space: nowrap;
+  }
+}
+
+.entries {
+  p {
+    margin: 0 0 8px;
+  }
+
+  h3 {
+    margin: 16px 0 8px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid $crimson;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-size: 20px;
+    font-variant: small-caps;
+    font-weight: 400;
+    color: $crimson;
+  }
+}
+
+@media (max-width: 479px) {
+  .stat-block {
+    padding: 16px;
+  }
+
+  .abilities {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 8px;
+  }
+}

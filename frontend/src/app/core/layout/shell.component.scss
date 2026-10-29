@@ -1,0 +1,46 @@
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 8px;
+  padding: 0 8px 0 16px;
+  background: var(--mat-sys-surface-container);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.brand {
+  margin-right: 8px;
+  font: var(--mat-sys-title-large);
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+
+  .active {
+    background: var(--mat-sys-secondary-container);
+    color: var(--mat-sys-on-secondary-container);
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// No celular, o nome do usuário some para caber a navegação.
+@media (max-width: 599px) {
+  .brand {
+    display: none;
+  }
+
+  .user {
+    display: none;
+  }
+}

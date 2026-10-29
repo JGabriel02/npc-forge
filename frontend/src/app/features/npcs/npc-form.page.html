@@ -1,0 +1,113 @@
+<section class="page">
+  @switch (state()) {
+    @case ('loading') {
+      <mat-spinner diameter="40" class="spinner" />
+    }
+    @case ('not-found') {
+      <div class="empty-state">
+        <p>NPC não encontrado.</p>
+        <a matButton routerLink="/npcs">Voltar para os NPCs</a>
+      </div>
+    }
+    @case ('error') {
+      <p class="load-error" role="alert">Não foi possível carregar o NPC.</p>
+    }
+    @case ('ready') {
+      <header class="page-header">
+        <h1>{{ original() ? 'Editar ' + original()!.name : 'Novo NPC' }}</h1>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+        @if (messages().length) {
+          <ul class="messages" role="alert">
+            @for (message of messages(); track message) {
+              <li>{{ message }}</li>
+            }
+          </ul>
+        }
+
+        <mat-card appearance="outlined">
+          <mat-card-content>
+            <div class="grid two">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome</mat-label>
+                <input matInput formControlName="name" />
+                <mat-error>{{ fieldError(form.controls.name) }}</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Campanha</mat-label>
+                <mat-select formControlName="campaignId">
+                  <mat-option value="">Sem campanha</mat-option>
+                  @for (campaign of campaigns(); track campaign.id) {
+                    <mat-option [value]="campaign.id">{{ campaign.name }}</mat-option>
+                  }
+                </mat-select>
+                <mat-error>{{ fieldError(form.controls.campaignId) }}</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Raça</mat-label>
+                <input matInput formControlName="race" placeholder="Ex.: anão" />
+                <mat-error>{{ fieldError(form.controls.race) }}</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Profissão</mat-label>
+                <input matInput formControlName="occupation" placeholder="Ex.: ferreiro" />
+                <mat-error>{{ fieldError(form.controls.occupation) }}</mat-error>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Aparência</mat-label>
+              <textarea matInput formControlName="appearance" rows="2"></textarea>
+              <mat-error>{{ fieldError(form.controls.appearance) }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Personalidade</mat-label>
+              <textarea matInput formControlName="personality" rows="2"></textarea>
+              <mat-error>{{ fieldError(form.controls.personality) }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Histórico</mat-label>
+              <textarea matInput formControlName="background" rows="4"></textarea>
+              <mat-error>{{ fieldError(form.controls.background) }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Anotações do mestre</mat-label>
+              <textarea matInput formControlName="notes" rows="3"></textarea>
+              <mat-hint>Privadas: segredos, ganchos e planos para a mesa.</mat-hint>
+              <mat-error>{{ fieldError(form.controls.notes) }}</mat-error>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="stat-card">
+          <mat-card-content>
+            <mat-slide-toggle formControlName="includeStatBlock">Incluir ficha de combate (D&amp;D 5e)</mat-slide-toggle>
+            <p class="toggle-hint">Ligue para inimigos e NPCs que podem entrar em combate.</p>
+
+            @if (form.controls.includeStatBlock.value) {
+              <app-stat-block-form [group]="form.controls.statBlock" />
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <div class="actions">
+          <a matButton [routerLink]="cancelLink()">Cancelar</a>
+          <button matButton="filled" type="submit" [disabled]="saving()">
+            @if (saving()) {
+              <mat-spinner diameter="20" />
+            } @else {
+              Salvar
+            }
+          </button>
+        </div>
+      </form>
+    }
+  }
+</section>

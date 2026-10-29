@@ -1,0 +1,47 @@
+<section class="page">
+  <header class="page-header">
+    <h1>Campanhas</h1>
+    @if (campaigns()?.length) {
+      <button matButton="filled" type="button" (click)="create()">
+        <mat-icon>add</mat-icon> Nova campanha
+      </button>
+    }
+  </header>
+
+  @if (loadError()) {
+    <p class="load-error" role="alert">Não foi possível carregar as campanhas.</p>
+  } @else if (campaigns(); as list) {
+    @if (list.length === 0) {
+      <div class="empty-state">
+        <p>Nenhuma campanha ainda. Campanhas agrupam seus NPCs e dão contexto para a IA.</p>
+        <button matButton="filled" type="button" (click)="create()">
+          <mat-icon>add</mat-icon> Nova campanha
+        </button>
+      </div>
+    } @else {
+      <ul class="grid">
+        @for (campaign of list; track campaign.id) {
+          <li>
+            <a class="card-link" [routerLink]="['/campaigns', campaign.id]">
+              <mat-card appearance="outlined" class="card">
+                <mat-card-header>
+                  <mat-card-title>{{ campaign.name }}</mat-card-title>
+                  <mat-card-subtitle>
+                    {{ campaign.npcCount }} {{ campaign.npcCount === 1 ? 'NPC' : 'NPCs' }}
+                  </mat-card-subtitle>
+                </mat-card-header>
+                @if (campaign.description) {
+                  <mat-card-content>
+                    <p class="description">{{ campaign.description }}</p>
+                  </mat-card-content>
+                }
+              </mat-card>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  } @else {
+    <mat-spinner diameter="40" class="spinner" />
+  }
+</section>

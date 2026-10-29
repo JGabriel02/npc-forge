@@ -1,0 +1,21 @@
+<mat-toolbar class="toolbar">
+  <a class="brand" routerLink="/campaigns">NpcForge</a>
+
+  <nav class="nav" aria-label="Principal">
+    <a matButton routerLink="/campaigns" routerLinkActive="active">Campanhas</a>
+    <a matButton routerLink="/npcs" routerLinkActive="active">NPCs</a>
+  </nav>
+
+  <span class="spacer"></span>
+
+  @if (auth.user(); as user) {
+    <span class="user">{{ user.displayName }}</span>
+  }
+  <button matIconButton type="button" (click)="auth.logout()" aria-label="Sair" title="Sair">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<main>
+  <router-outlet />
+</main>

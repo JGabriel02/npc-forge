@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>{{ editing ? 'Editar campanha' : 'Nova campanha' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()" novalidate>
+  <mat-dialog-content>
+    @if (messages().length) {
+      <ul class="messages" role="alert">
+        @for (message of messages(); track message) {
+          <li>{{ message }}</li>
+        }
+      </ul>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="name" cdkFocusInitial />
+      <mat-error>{{ fieldError(form.controls.name) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Descrição</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+      <mat-error>{{ fieldError(form.controls.description) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Cenário e tom</mat-label>
+      <textarea matInput formControlName="setting" rows="3" placeholder="Ex.: terror gótico em Barovia, tom sombrio"></textarea>
+      <mat-hint>Usado como contexto pela IA ao gerar NPCs desta campanha.</mat-hint>
+      <mat-error>{{ fieldError(form.controls.setting) }}</mat-error>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close>Cancelar</button>
+    <button matButton="filled" type="submit" [disabled]="saving()">Salvar</button>
+  </mat-dialog-actions>
+</form>

@@ -1,0 +1,71 @@
+<article class="stat-block" [attr.aria-label]="'Ficha de ' + name()">
+  <header>
+    <h2 class="name">{{ name() }}</h2>
+    <p class="type">{{ typeLine() }}</p>
+  </header>
+
+  <div class="rule" aria-hidden="true"></div>
+
+  <dl class="props">
+    <div><dt>Classe de Armadura</dt><dd>{{ statBlock().armorClass }}</dd></div>
+    <div><dt>Pontos de Vida</dt><dd>{{ statBlock().hitPoints }} ({{ statBlock().hitDice }})</dd></div>
+    <div><dt>Deslocamento</dt><dd>{{ statBlock().speed }}</dd></div>
+  </dl>
+
+  <div class="rule" aria-hidden="true"></div>
+
+  <dl class="abilities">
+    @for (ability of abilities(); track ability.short) {
+      <div>
+        <dt><abbr [title]="ability.label">{{ ability.short }}</abbr></dt>
+        <dd>{{ ability.value }}</dd>
+      </div>
+    }
+  </dl>
+
+  <div class="rule" aria-hidden="true"></div>
+
+  <dl class="props">
+    @for (detail of details(); track detail.label) {
+      <div><dt>{{ detail.label }}</dt><dd>{{ detail.value }}</dd></div>
+    }
+    <div><dt>Nível de Desafio</dt><dd>{{ challenge() }}</dd></div>
+  </dl>
+
+  @if (statBlock().traits.length) {
+    <div class="rule" aria-hidden="true"></div>
+    <section class="entries">
+      @for (trait of statBlock().traits; track $index) {
+        <p><strong><em>{{ trait.name }}.</em></strong> {{ trait.description }}</p>
+      }
+    </section>
+  }
+
+  @if (statBlock().actions.length) {
+    <section class="entries">
+      <h3>Ações</h3>
+      @for (action of statBlock().actions; track $index) {
+        <p>
+          <!-- O Angular descarta espaços entre tags e blocos @if; o {{ ' ' }} garante o espaço após o nome. -->
+          <strong><em>{{ action.name }}.</em></strong>{{ ' ' }}
+          @if (formatAttackBonus(action.attackBonus); as bonus) {
+            <em>Jogada de Ataque:</em> {{ bonus }}.
+          }
+          @if (action.damage) {
+            <em>Dano:</em> {{ action.damage }}.
+          }
+          {{ action.description }}
+        </p>
+      }
+    </section>
+  }
+
+  @if (statBlock().reactions.length) {
+    <section class="entries">
+      <h3>Reações</h3>
+      @for (reaction of statBlock().reactions; track $index) {
+        <p><strong><em>{{ reaction.name }}.</em></strong> {{ reaction.description }}</p>
+      }
+    </section>
+  }
+</article>
