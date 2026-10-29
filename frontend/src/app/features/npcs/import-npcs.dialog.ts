@@ -8,6 +8,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { errorMessages, problemFrom } from '../../core/api/problem-details';
 import { describeImportErrors, readExportFile, ReadResult } from './npc-transfer';
 import { NpcsApi } from './npcs.api';
+import { EXPORT_MAX_BYTES } from '../../core/api/api.models';
+
+const TOO_LARGE = `O arquivo é grande demais (máximo de ${EXPORT_MAX_BYTES / 1024 / 1024} MB).`;
 
 /** Importa um arquivo de exportação. Fecha devolvendo quantos NPCs foram importados. */
 @Component({
@@ -44,8 +47,18 @@ export class ImportNpcsDialog {
 
     this.errors.set([]);
     this.fileName.set(file.name);
-    this.read.set(readExportFile(await file.text()));
+    // Um arquivo enorme travaria a aba só para ser lido; a API recusaria de qualquer forma.
+    if (file.size > EXPORT_MAX_BYTES) {
+      this.read.set({ ok: false, error: TOO_LARGE });
+      return;
+    }
+
+    const chosen = ++this.picks;
+    const text = await file.text();
+    if (chosen === this.picks) this.read.set(readExportFile(text)); // ignora a leitura de um arquivo já trocado
   }
+
+  private picks = 0;
 
   protected import(): void {
     const result = this.read();
@@ -67,7 +80,7 @@ export class ImportNpcsDialog {
 
   private describe(error: unknown, result: Extract<ReadResult, { ok: true }>): string[] {
     if (error instanceof HttpErrorResponse && error.status === 413) {
-      return ['O arquivo é grande demais (máximo de 5 MB).'];
+      return [TOO_LARGE];
     }
     const problem = problemFrom(error);
     if (error instanceof HttpErrorResponse && error.status === 400 && problem) {

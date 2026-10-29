@@ -120,7 +120,7 @@ Os NPCs criados na versão local (com IA) podem ir para a versão web por um arq
 Bom saber:
 - Importar o mesmo arquivo de novo **cria cópias**, não atualiza os que já existem.
 - É **tudo ou nada**: se um NPC do arquivo tiver erro (ex.: Força 31), nada é importado e a tela diz qual NPC corrigir.
-- Limites: até 500 NPCs e 5 MB por arquivo.
+- Limites: até 500 NPCs e 20 MB por arquivo. Se o filtro passar disso, a exportação avisa; filtre por campanha ou tipo e exporte em partes.
 
 ## Testes
 

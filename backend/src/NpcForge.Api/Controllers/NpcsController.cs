@@ -1,5 +1,7 @@
 using System.Net.Http.Headers;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NpcForge.Api.Auth;
 using NpcForge.Core.Common;
 using NpcForge.Core.Npcs;
@@ -8,7 +10,8 @@ namespace NpcForge.Api.Controllers;
 
 [ApiController]
 [Route("api/npcs")]
-public class NpcsController(INpcService npcs, INpcTransferService transfer, TimeProvider time) : ControllerBase
+public class NpcsController(
+    INpcService npcs, INpcTransferService transfer, TimeProvider time, IOptions<JsonOptions> jsonOptions) : ControllerBase
 {
     [HttpGet]
     public Task<PagedResult<NpcSummaryDto>> List([FromQuery] NpcQuery query, CancellationToken ct)
@@ -16,11 +19,25 @@ public class NpcsController(INpcService npcs, INpcTransferService transfer, Time
 
     /// <summary>Baixa um arquivo com todos os NPCs dos filtros da lista (page/pageSize são ignorados).</summary>
     [HttpGet("export")]
-    public async Task<NpcExportFile> Export([FromQuery] NpcQuery filters, CancellationToken ct)
+    public async Task<IActionResult> Export([FromQuery] NpcQuery filters, CancellationToken ct)
     {
+        // Nunca gera um arquivo que a importação recusaria.
+        const string split = "Filtre por campanha ou tipo e exporte em partes.";
         var file = await transfer.ExportAsync(User.GetUserId(), filters, ct);
+        if (file.Npcs!.Count > NpcExportFile.MaxNpcs)
+            return Problem(
+                $"Esse filtro tem {file.Npcs.Count} NPCs, e um arquivo leva no máximo {NpcExportFile.MaxNpcs}. {split}",
+                statusCode: StatusCodes.Status400BadRequest);
+
+        // Serializa aqui (com as mesmas opções do MVC) para medir o tamanho antes de enviar.
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(file, jsonOptions.Value.JsonSerializerOptions);
+        if (bytes.Length > NpcExportFile.MaxFileBytes)
+            return Problem(
+                $"O arquivo passaria de {NpcExportFile.MaxFileBytes / 1024 / 1024} MB. {split}",
+                statusCode: StatusCodes.Status400BadRequest);
+
         SetAttachment(FileNames.ForList(DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime)));
-        return file;
+        return File(bytes, "application/json");
     }
 
     [HttpGet("{id:guid}/export")]
@@ -35,7 +52,7 @@ public class NpcsController(INpcService npcs, INpcTransferService transfer, Time
 
     /// <summary>Importa um arquivo de exportação: tudo ou nada, NPCs sem campanha.</summary>
     [HttpPost("import")]
-    [RequestSizeLimit(5 * 1024 * 1024)]
+    [RequestSizeLimit(NpcExportFile.MaxFileBytes)]
     public async Task<IActionResult> Import(NpcExportFile file, CancellationToken ct)
     {
         var imported = await transfer.ImportAsync(User.GetUserId(), file, ct);

@@ -15,7 +15,7 @@ import { CampaignDto, NpcSummaryDto, PagedResult } from '../../core/api/api.mode
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ImportNpcsDialog } from './import-npcs.dialog';
-import { saveResponse } from '../../shared/download';
+import { exportErrorMessage, saveResponse } from '../../shared/download';
 import { PtBrPaginatorIntl } from '../../shared/paginator-intl';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import { NpcsApi } from './npcs.api';
@@ -165,7 +165,7 @@ export class NpcListPage {
       .pipe(finalize(() => this.exporting.set(false)))
       .subscribe({
         next: (response) => saveResponse(response, 'npcs.json'),
-        error: () => this.snackBar.open('Não foi possível exportar. Tente novamente.', 'Fechar', { duration: 6000 }),
+        error: async (error: unknown) => this.snackBar.open(await exportErrorMessage(error), 'Fechar', { duration: 8000 }),
       });
   }
 

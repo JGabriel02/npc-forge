@@ -67,9 +67,9 @@ public class NpcImportTests(ApiFactory factory)
     }
 
     [Theory]
-    [InlineData("str", 31, "Força deve estar entre 1 e 30.")]
-    [InlineData("armorClass", 0, "Classe de Armadura deve estar entre 1 e 30.")]
-    [InlineData("hitPoints", 0, "Pontos de vida deve ser pelo menos 1.")]
+    [InlineData("str", 31, "O campo Força deve estar entre 1 e 30.")]
+    [InlineData("armorClass", 0, "O campo Classe de Armadura deve estar entre 1 e 30.")]
+    [InlineData("hitPoints", 0, "O campo Pontos de vida deve ser pelo menos 1.")]
     public async Task Import_ValidationMessagesArePortuguese(string field, int value, string expected)
     {
         // No teste no navegador, a importação mostrou "The field Str must be between 1 and 30."
@@ -85,8 +85,41 @@ public class NpcImportTests(ApiFactory factory)
         var npc = Npc("x");
         npc["name"] = "";
 
-        await AssertRejectedWith(FileWith(npc).ToJsonString(), "Nome é obrigatório.");
+        await AssertRejectedWith(FileWith(npc).ToJsonString(), "O campo Nome é obrigatório.");
     }
+
+    [Fact]
+    public async Task Import_NullTraitDescription_HasPortugueseMessage()
+    {
+        // string não anulável ganha um [Required] implícito, com a mensagem padrão em inglês.
+        var npc = Npc("Rahadin", withStatBlock: true);
+        npc["statBlock"]!["traits"]![0]!["description"] = null;
+
+        await AssertRejectedWith(FileWith(npc).ToJsonString(), "O campo Descrição é obrigatório.");
+    }
+
+    // A revisão final achou: um valor do tipo errado (editado à mão) voltava em inglês, com a chave "$.npcs[0]..."
+    // que a tela não reconhece, e ainda um "The file field is required." solto.
+    [Theory]
+    [InlineData("size", "\"Enorme\"", "size")]
+    [InlineData("str", "\"31a\"", "str")]
+    public async Task Import_WrongJsonType_HasPortugueseMessageWithNpcPath(string field, string json, string name)
+    {
+        var npc = Npc("Rahadin", withStatBlock: true);
+        npc["statBlock"]![field] = JsonNode.Parse(json);
+
+        var response = await ImportRawAsync(await factory.CreateAuthenticatedClientAsync(), FileWith(npc).ToJsonString());
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var errors = (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("errors");
+        var only = Assert.Single(errors.EnumerateObject());
+        Assert.Equal($"npcs[0].statBlock.{field}", only.Name);
+        Assert.Equal($"O campo \"{name}\" tem um valor inválido.", only.Value[0].GetString());
+    }
+
+    [Fact]
+    public async Task Import_BrokenJson_HasPortugueseMessage()
+        => await AssertRejectedWith("""{ "format": "npcforge-npcs", """, "O conteúdo não é um JSON válido.");
 
     [Fact]
     public async Task Import_WrongFormat_Returns400WithMessage()

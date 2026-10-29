@@ -21,6 +21,53 @@ public class NpcExportTests(ApiFactory factory)
         Assert.Equal(3, withSheet.GetProperty("npcs").GetArrayLength());
     }
 
+    // A revisão final achou: exportar mais do que a importação aceita gerava um arquivo inútil na versão web.
+    [Fact]
+    public async Task Export_MoreThan500_Returns400WithMessage()
+    {
+        var client = await factory.CreateAuthenticatedClientAsync();
+        await ImportAsync(client, Enumerable.Range(0, 500).Select(i => (object)new { name = $"NPC {i}" }));
+        await client.CreateNpcAsync("NPC 501");
+
+        var response = await client.GetAsync("/api/npcs/export");
+
+        await AssertProblem(response,
+            "Esse filtro tem 501 NPCs, e um arquivo leva no máximo 500. Filtre por campanha ou tipo e exporte em partes.");
+    }
+
+    [Fact]
+    public async Task Export_FileOver20MB_Returns400WithMessage()
+    {
+        // Cerca de 210 KB por NPC (fichas com as listas cheias): 120 NPCs passam de 20 MB.
+        var client = await factory.CreateAuthenticatedClientAsync();
+        var feature = new { name = new string('n', 100), description = new string('d', 2000) };
+        var action = new { name = new string('n', 100), description = new string('d', 2000), damage = new string('x', 500) };
+        var statBlock = NpcTestData.ValidStatBlock() with
+        {
+            Traits = Enumerable.Repeat(new FeaturePayload(feature.name, feature.description), 30).ToList(),
+            Actions = Enumerable.Repeat(new ActionPayload(action.name, action.description, 5, action.damage), 30).ToList(),
+            Reactions = Enumerable.Repeat(new FeaturePayload(feature.name, feature.description), 30).ToList(),
+        };
+        await ImportAsync(client, Enumerable.Range(0, 120).Select(i => (object)new { name = $"NPC {i}", statBlock }));
+
+        var response = await client.GetAsync("/api/npcs/export");
+
+        await AssertProblem(response,
+            "O arquivo passaria de 20 MB. Filtre por campanha ou tipo e exporte em partes.");
+    }
+
+    private static async Task ImportAsync(HttpClient client, IEnumerable<object> npcs)
+    {
+        var response = await client.PostAsJsonAsync("/api/npcs/import", new { format = "npcforge-npcs", version = 1, npcs });
+        response.EnsureSuccessStatusCode();
+    }
+
+    private static async Task AssertProblem(HttpResponseMessage response, string detail)
+    {
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(detail, (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("detail").GetString());
+    }
+
     [Fact]
     public async Task Export_FileHasFormatVersionAndNoIdsOrCampaign()
     {

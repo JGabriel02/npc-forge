@@ -8,11 +8,11 @@ namespace NpcForge.Core.Npcs;
 
 public record StatBlockFeatureDto(
     [Display(Name = "Nome"), Required(ErrorMessage = Messages.Required), MaxLength(NpcLimits.ShortText, ErrorMessage = Messages.MaxLength)] string Name,
-    [Display(Name = "Descrição"), MaxLength(NpcLimits.LongText, ErrorMessage = Messages.MaxLength)] string Description);
+    [Display(Name = "Descrição"), Required(ErrorMessage = Messages.Required), MaxLength(NpcLimits.LongText, ErrorMessage = Messages.MaxLength)] string Description);
 
 public record StatBlockActionDto(
     [Display(Name = "Nome"), Required(ErrorMessage = Messages.Required), MaxLength(NpcLimits.ShortText, ErrorMessage = Messages.MaxLength)] string Name,
-    [Display(Name = "Descrição"), MaxLength(NpcLimits.LongText, ErrorMessage = Messages.MaxLength)] string Description,
+    [Display(Name = "Descrição"), Required(ErrorMessage = Messages.Required), MaxLength(NpcLimits.LongText, ErrorMessage = Messages.MaxLength)] string Description,
     int? AttackBonus,
     [Display(Name = "Dano"), MaxLength(NpcLimits.MediumText, ErrorMessage = Messages.MaxLength)] string? Damage);
 

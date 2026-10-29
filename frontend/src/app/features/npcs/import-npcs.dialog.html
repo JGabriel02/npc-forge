@@ -47,7 +47,13 @@
 
 <mat-dialog-actions align="end">
   <button matButton type="button" mat-dialog-close [disabled]="importing()">Cancelar</button>
-  <button matButton="filled" type="button" (click)="import()" [disabled]="!preview().length || importing()">
+  <button
+    matButton="filled"
+    type="button"
+    (click)="import()"
+    [disabled]="!preview().length || importing()"
+    [attr.aria-label]="importing() ? 'Importando…' : null"
+  >
     @if (importing()) {
       <mat-spinner diameter="20" />
     } @else {

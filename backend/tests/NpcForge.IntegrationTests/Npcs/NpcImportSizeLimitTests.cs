@@ -7,11 +7,11 @@ namespace NpcForge.IntegrationTests.Npcs;
 public class NpcImportSizeLimitTests(KestrelApiFactory factory)
 {
     [Fact]
-    public async Task Import_FileOver5MB_Returns413()
+    public async Task Import_FileOver20MB_Returns413()
     {
         // No teste no navegador, o Kestrel recusou o corpo grande, mas a resposta saiu como 500.
         var client = await factory.CreateAuthenticatedClientAsync();
-        var json = $$"""{ "format": "npcforge-npcs", "version": 1, "npcs": [{ "name": "Grande", "notes": "{{new string('x', 6 * 1024 * 1024)}}" }] }""";
+        var json = $$"""{ "format": "npcforge-npcs", "version": 1, "npcs": [{ "name": "Grande", "notes": "{{new string('x', 21 * 1024 * 1024)}}" }] }""";
 
         var response = await client.PostAsync("/api/npcs/import", new StringContent(json, Encoding.UTF8, "application/json"));
 

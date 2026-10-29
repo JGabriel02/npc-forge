@@ -27,6 +27,9 @@ public class NpcExportFile
     public const int CurrentVersion = 1;
     public const int MaxNpcs = 500;
 
+    /// <summary>Tamanho máximo do arquivo: a importação recusa (413) e a exportação não gera nada acima disso.</summary>
+    public const int MaxFileBytes = 20 * 1024 * 1024;
+
     // Sem valor padrão: um JSON sem "format"/"version" não é tratado como exportação do NpcForge.
     [Required(ErrorMessage = "Este arquivo não é uma exportação de NPCs do NpcForge.")]
     [AllowedValues(FormatName, ErrorMessage = "Este arquivo não é uma exportação de NPCs do NpcForge.")]

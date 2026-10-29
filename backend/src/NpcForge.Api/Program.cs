@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NpcForge.Api.Auth;
+using NpcForge.Api.Validation;
 using NpcForge.Infrastructure;
 using NpcForge.Infrastructure.Identity;
 using NpcForge.Infrastructure.Persistence;
@@ -62,7 +63,8 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)))
+    .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = InvalidJsonResponses.Create);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();

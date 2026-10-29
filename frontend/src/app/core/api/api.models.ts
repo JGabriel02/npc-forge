@@ -140,6 +140,8 @@ export interface NpcExportFile {
 
 export const EXPORT_FORMAT = 'npcforge-npcs';
 export const EXPORT_VERSION = 1;
+/** Tamanho máximo do arquivo de importação (igual ao NpcExportFile.MaxFileBytes da API). */
+export const EXPORT_MAX_BYTES = 20 * 1024 * 1024;
 
 /** NPC sugerido pela IA (não salvo). */
 export interface NpcDraft {
