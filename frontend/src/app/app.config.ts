@@ -1,7 +1,10 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { catchError, of } from 'rxjs';
 import { routes } from './app.routes';
+import { AuthService } from './core/auth/auth.service';
+import { jwtInterceptor } from './core/auth/jwt.interceptor';
 
 // Configuração global: tudo que a aplicação inteira pode injetar (HTTP, roteador...).
 export const appConfig: ApplicationConfig = {
@@ -9,6 +12,12 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     // withComponentInputBinding: parâmetros da rota (ex.: :id) chegam no componente como input().
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([])),
+    provideHttpClient(withInterceptors([jwtInterceptor])),
+    // Ao abrir o app com um token salvo, carrega o usuário; se a API recusar, encerra a sessão.
+    provideAppInitializer(() => {
+      const auth = inject(AuthService);
+      if (!auth.getToken()) return;
+      return auth.loadUser().pipe(catchError(() => of(auth.logout())));
+    }),
   ],
 };
