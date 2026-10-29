@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>Importar NPCs</h2>
+
+<mat-dialog-content>
+  <p class="intro">Escolha um arquivo exportado pelo NpcForge (.json).</p>
+
+  <div class="picker">
+    <input #fileInput type="file" accept=".json,application/json" hidden (change)="onFileChosen($event)" />
+    <button matButton="outlined" type="button" (click)="fileInput.click()" [disabled]="importing()">
+      <mat-icon>upload_file</mat-icon> Escolher arquivo
+    </button>
+    @if (fileName()) {
+      <span class="file-name">{{ fileName() }}</span>
+    }
+  </div>
+
+  @if (readError(); as error) {
+    <p class="error" role="alert">{{ error }}</p>
+  }
+
+  @if (preview().length) {
+    <p class="count">{{ preview().length === 1 ? '1 NPC encontrado' : preview().length + ' NPCs encontrados' }}</p>
+    <ul class="preview">
+      @for (npc of preview(); track $index) {
+        <li>
+          <span>{{ npc.name }}</span>
+          <span class="chip" [class.combat]="npc.hasStatBlock">{{ npc.hasStatBlock ? 'com ficha' : 'narrativo' }}</span>
+        </li>
+      }
+    </ul>
+    <p class="hint">
+      <mat-icon inline>info</mat-icon>
+      Os NPCs entram sem campanha. Importar o mesmo arquivo de novo cria cópias.
+    </p>
+  }
+
+  @if (errors().length) {
+    <div class="errors" role="alert">
+      <p>Nada foi importado. Corrija o arquivo e tente de novo:</p>
+      <ul>
+        @for (error of errors(); track $index) {
+          <li>{{ error }}</li>
+        }
+      </ul>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton type="button" mat-dialog-close [disabled]="importing()">Cancelar</button>
+  <button
+    matButton="filled"
+    type="button"
+    (click)="import()"
+    [disabled]="!preview().length || importing()"
+    [attr.aria-label]="importing() ? 'Importando…' : null"
+  >
+    @if (importing()) {
+      <mat-spinner diameter="20" />
+    } @else {
+      Importar {{ preview().length === 1 ? '1 NPC' : preview().length + ' NPCs' }}
+    }
+  </button>
+</mat-dialog-actions>

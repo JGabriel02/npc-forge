@@ -13,27 +13,7 @@ public class NpcService(AppDbContext db, TimeProvider time) : INpcService
         // Limite superior evita overflow em (page - 1) * pageSize, que viraria OFFSET negativo.
         var page = Math.Clamp(query.Page, 1, int.MaxValue / NpcQuery.MaxPageSize);
         var pageSize = Math.Clamp(query.PageSize, 1, NpcQuery.MaxPageSize);
-        var npcs = Owned(userId);
-
-        if (query.CampaignId == "none")
-            npcs = npcs.Where(n => n.CampaignId == null);
-        else if (query.CampaignId is not null)
-        {
-            if (!Guid.TryParse(query.CampaignId, out var campaignId))
-                return new PagedResult<NpcSummaryDto>([], page, pageSize, 0);
-            npcs = npcs.Where(n => n.CampaignId == campaignId);
-        }
-
-        if (query.HasStatBlock is { } hasStatBlock)
-            npcs = npcs.Where(n => (n.StatBlock != null) == hasStatBlock);
-
-        if (!string.IsNullOrWhiteSpace(query.Search))
-        {
-            var pattern = $"%{EscapeLike(query.Search.Trim())}%";
-            npcs = npcs.Where(n => EF.Functions.ILike(n.Name, pattern, LikeEscape)
-                                   || (n.Race != null && EF.Functions.ILike(n.Race, pattern, LikeEscape))
-                                   || (n.Occupation != null && EF.Functions.ILike(n.Occupation, pattern, LikeEscape)));
-        }
+        var npcs = NpcFiltering.Apply(Owned(userId), query);
 
         var total = await npcs.CountAsync(ct);
         var items = await npcs
@@ -137,10 +117,4 @@ public class NpcService(AppDbContext db, TimeProvider time) : INpcService
 
     private async Task<bool> IsOwnCampaignAsync(string userId, Guid? campaignId, CancellationToken ct)
         => campaignId is null || await db.Campaigns.AnyAsync(c => c.Id == campaignId && c.UserId == userId, ct);
-
-    // '%' e '_' são curingas no ILIKE; o Npgsql não define escape por padrão, então passamos '\' explicitamente.
-    private const string LikeEscape = @"\";
-
-    private static string EscapeLike(string value)
-        => value.Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
 }

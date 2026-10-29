@@ -26,6 +26,19 @@ public static class NpcMapping
             DndRules.AbilityModifier(s.Int), DndRules.AbilityModifier(s.Wis), DndRules.AbilityModifier(s.Cha)),
         DndRules.ProficiencyBonus(s.ChallengeRating));
 
+    /// <summary>NPC no formato do arquivo de exportação (só o conteúdo, sem ids, campanha ou datas).</summary>
+    public static ExportedNpc ToExported(this Npc n) => new(
+        n.Name, n.Race, n.Occupation, n.Appearance, n.Personality, n.Background, n.Notes,
+        n.StatBlock is { } s
+            ? new StatBlockRequest(
+                s.Size, s.CreatureType, s.Alignment, s.ArmorClass, s.HitPoints, s.HitDice, s.Speed,
+                s.Str, s.Dex, s.Con, s.Int, s.Wis, s.Cha, s.ChallengeRating,
+                s.SavingThrows, s.Skills, s.Senses, s.Languages,
+                s.Traits.Select(ToDto).ToList(),
+                s.Actions.Select(a => new StatBlockActionDto(a.Name, a.Description, a.AttackBonus, a.Damage)).ToList(),
+                s.Reactions.Select(ToDto).ToList())
+            : null);
+
     public static StatBlock ToEntity(this StatBlockRequest r, Guid npcId) => new()
     {
         NpcId = npcId,

@@ -12,6 +12,10 @@ import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, catchError, debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs';
 import { CampaignDto, NpcSummaryDto, PagedResult } from '../../core/api/api.models';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ImportNpcsDialog } from './import-npcs.dialog';
+import { exportErrorMessage, saveResponse } from '../../shared/download';
 import { PtBrPaginatorIntl } from '../../shared/paginator-intl';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import { NpcsApi } from './npcs.api';
@@ -44,6 +48,8 @@ export class NpcListPage {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly npcsApi = inject(NpcsApi);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly pageSizes = PAGE_SIZES;
   protected readonly columns = ['name', 'race', 'occupation', 'campaign', 'sheet'];
@@ -78,8 +84,9 @@ export class NpcListPage {
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe((search) => this.updateFilters({ search: search.trim() || null, page: null }, true));
 
-    // Toda mudança de filtro recarrega; switchMap cancela a requisição anterior se ainda estiver em andamento.
-    toObservable(this.filters)
+    // Toda mudança de filtro (ou um pedido explícito de recarga) recarrega;
+    // switchMap cancela a requisição anterior se ainda estiver em andamento.
+    toObservable(computed(() => ({ ...this.filters(), reload: this.reload() })))
       .pipe(
         switchMap((f) => {
           this.loading.set(true);
@@ -120,6 +127,46 @@ export class NpcListPage {
   protected clearFilters(): void {
     this.searchControl.setValue('', { emitEvent: false });
     this.updateFilters({ search: null, campaignId: null, type: null, page: null });
+  }
+
+  /** Incrementado para recarregar a lista mesmo quando a URL não muda (ex.: depois de importar). */
+  private readonly reload = signal(0);
+
+  /** Abre o diálogo de importação; depois mostra os importados, que entram sem campanha. */
+  protected importNpcs(): void {
+    this.dialog
+      .open<ImportNpcsDialog, void, number>(ImportNpcsDialog, { width: '560px' })
+      .afterClosed()
+      .subscribe((imported) => {
+        if (!imported) return;
+        this.snackBar.open(imported === 1 ? '1 NPC importado.' : `${imported} NPCs importados.`, 'Fechar', { duration: 6000 });
+        this.searchControl.setValue('', { emitEvent: false });
+        void this.router.navigate([], { relativeTo: this.route, queryParams: { campaignId: 'none' } });
+        this.reload.update((n) => n + 1);
+      });
+  }
+
+  protected readonly exporting = signal(false);
+  protected readonly exportTitle = computed(() => {
+    const total = this.result()?.totalCount ?? 0;
+    return total === 1 ? 'Exportar 1 NPC' : `Exportar ${total} NPCs`;
+  });
+
+  /** Baixa um arquivo com todos os NPCs dos filtros atuais (todas as páginas). */
+  protected exportFiltered(): void {
+    const f = this.filters();
+    this.exporting.set(true);
+    this.npcsApi
+      .exportList({
+        search: f.search,
+        campaignId: f.campaignId || undefined,
+        hasStatBlock: f.type === 'all' ? undefined : f.type === 'withStatBlock',
+      })
+      .pipe(finalize(() => this.exporting.set(false)))
+      .subscribe({
+        next: (response) => saveResponse(response, 'npcs.json'),
+        error: async (error: unknown) => this.snackBar.open(await exportErrorMessage(error), 'Fechar', { duration: 8000 }),
+      });
   }
 
   protected open(npc: NpcSummaryDto): void {

@@ -118,6 +118,31 @@ export interface PagedResult<T> {
   totalCount: number;
 }
 
+/** Um NPC no arquivo de exportação: só o conteúdo (sem id, campanha ou datas). */
+export interface ExportedNpc {
+  name: string;
+  race: string | null;
+  occupation: string | null;
+  appearance: string | null;
+  personality: string | null;
+  background: string | null;
+  notes: string | null;
+  statBlock: StatBlockRequest | null;
+}
+
+/** Arquivo de exportação de NPCs ("npcforge-npcs"). */
+export interface NpcExportFile {
+  format: string;
+  version: number;
+  exportedAt: string;
+  npcs: ExportedNpc[];
+}
+
+export const EXPORT_FORMAT = 'npcforge-npcs';
+export const EXPORT_VERSION = 1;
+/** Tamanho máximo do arquivo de importação (igual ao NpcExportFile.MaxFileBytes da API). */
+export const EXPORT_MAX_BYTES = 20 * 1024 * 1024;
+
 /** NPC sugerido pela IA (não salvo). */
 export interface NpcDraft {
   name: string;

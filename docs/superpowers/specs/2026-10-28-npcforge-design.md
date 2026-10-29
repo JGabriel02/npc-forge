@@ -38,6 +38,7 @@ O projeto tem dois objetivos de igual peso:
 - Sugestão por campo (✨) no formulário.
 - Contador diário de gerações por usuário, com limite opcional (padrão: sem limite).
 - NPCs públicos: galeria de NPCs públicos e cópia de um NPC público para a própria conta/campanha.
+- Exportar e importar NPCs em arquivo JSON, para levar NPCs da versão local (com IA) para a versão web — design em `docs/superpowers/specs/2026-10-29-npc-export-import-design.md`.
 - Provedores de IA: Ollama (local, padrão) e um provedor gratuito em nuvem, atrás da mesma interface.
 
 **Fora da v1 (possíveis versões futuras):**

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NpcForge.Api.Auth;
+using NpcForge.Api.Validation;
 using NpcForge.Infrastructure;
 using NpcForge.Infrastructure.Identity;
 using NpcForge.Infrastructure.Persistence;
@@ -56,11 +57,14 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
     .AllowAnyHeader()
-    .AllowAnyMethod()));
+    .AllowAnyMethod()
+    // Sem isto, o Angular (outra origem) não consegue ler o nome do arquivo exportado.
+    .WithExposedHeaders("Content-Disposition")));
 
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers()
-    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)))
+    .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = InvalidJsonResponses.Create);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -74,7 +78,12 @@ if (app.Environment.IsDevelopment())
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 
-app.UseExceptionHandler();
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    // Erros de requisição do Kestrel (ex.: corpo acima do [RequestSizeLimit] → 413) mantêm o próprio status;
+    // sem isto, viram 500.
+    StatusCodeSelector = ex => ex is BadHttpRequestException bad ? bad.StatusCode : StatusCodes.Status500InternalServerError,
+});
 app.UseStatusCodePages();
 app.UseHttpsRedirection();
 app.UseCors();

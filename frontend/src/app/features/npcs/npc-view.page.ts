@@ -5,10 +5,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
-import { filter, switchMap } from 'rxjs';
+import { filter, finalize, switchMap } from 'rxjs';
 import { CampaignDto, NpcDto } from '../../core/api/api.models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialog, ConfirmDialogData } from '../../shared/confirm.dialog';
+import { exportErrorMessage, saveResponse } from '../../shared/download';
 import { ignoreNotFound } from '../../shared/ignore-not-found';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import { NpcsApi } from './npcs.api';
@@ -53,6 +54,19 @@ export class NpcViewPage {
 
   constructor() {
     effect(() => this.load(this.id()));
+  }
+
+  protected readonly exporting = signal(false);
+
+  protected exportNpc(): void {
+    this.exporting.set(true); // evita baixar duas vezes num clique duplo
+    this.npcsApi
+      .exportOne(this.npc()!.id)
+      .pipe(finalize(() => this.exporting.set(false)))
+      .subscribe({
+        next: (response) => saveResponse(response, 'npc.json'),
+        error: async (error: unknown) => this.snackBar.open(await exportErrorMessage(error), 'Fechar', { duration: 6000 }),
+      });
   }
 
   protected remove(): void {

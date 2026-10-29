@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ICampaignService, CampaignService>();
         services.AddScoped<INpcService, NpcService>();
+        services.AddScoped<INpcTransferService, NpcTransferService>();
 
         services.AddAi(configuration);
         return services;
