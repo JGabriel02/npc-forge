@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "race": { "type": "string" },
+    "occupation": { "type": "string" },
+    "appearance": { "type": "string" },
+    "personality": { "type": "string" },
+    "background": { "type": "string" }
+  },
+  "required": ["name", "race", "occupation", "appearance", "personality", "background"]
+}
