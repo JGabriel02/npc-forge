@@ -109,6 +109,19 @@ dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Database=npc
 dotnet run
 ```
 
+## Levando seus NPCs para a versão web
+
+Os NPCs criados na versão local (com IA) podem ir para a versão web por um arquivo JSON:
+
+1. **Exporte na versão local.** Na tela **NPCs**, o botão **Exportar** baixa todos os NPCs do filtro atual (todas as páginas, não só a visível). Na página de um NPC, **Exportar** baixa só ele. O arquivo leva o NPC, a ficha de combate e suas anotações; campanhas ficam de fora.
+2. **Importe na versão web.** Em **NPCs**, clique em **Importar** e escolha o arquivo. Você vê a lista do que vai entrar antes de confirmar.
+3. **Organize.** Os NPCs importados entram **sem campanha**; abra cada um e escolha a campanha depois.
+
+Bom saber:
+- Importar o mesmo arquivo de novo **cria cópias**, não atualiza os que já existem.
+- É **tudo ou nada**: se um NPC do arquivo tiver erro (ex.: Força 31), nada é importado e a tela diz qual NPC corrigir.
+- Limites: até 500 NPCs e 5 MB por arquivo.
+
 ## Testes
 
 Backend, com o Docker rodando (os testes de integração sobem um Postgres temporário):
@@ -132,6 +145,7 @@ npx ng test --watch=false
 | Campanhas | `GET/POST /api/campaigns`, `GET/PUT/DELETE /api/campaigns/{id}` |
 | NPCs | `GET /api/npcs?campaignId=&search=&hasStatBlock=&page=&pageSize=`, `POST /api/npcs`, `GET/PUT/DELETE /api/npcs/{id}` |
 | Ficha | `PUT/DELETE /api/npcs/{id}/statblock` |
+| Exportar/importar | `GET /api/npcs/export` (mesmos filtros da lista), `GET /api/npcs/{id}/export`, `POST /api/npcs/import` |
 
 Todas as rotas, exceto registro e login, exigem `Authorization: Bearer <token>`. Erros seguem o formato `ProblemDetails`.
 
@@ -156,6 +170,7 @@ Decisões e o design completo: [docs/superpowers/specs](docs/superpowers/specs/2
 1. ~~Fundação do backend~~
 2. ~~Frontend Angular (sem IA)~~
 3. ~~IA local (Ollama), com contador diário de gerações~~
+   - ~~Exportar/importar NPCs em arquivo JSON (local → web)~~
 4. Sugestões por campo ✨
 5. NPCs públicos
 6. Provedor de IA em nuvem, polimento e prints neste README
