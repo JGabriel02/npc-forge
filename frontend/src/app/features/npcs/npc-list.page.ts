@@ -5,13 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatPaginatorIntl, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, catchError, debounceTime, distinctUntilChanged, finalize, switchMap } from 'rxjs';
 import { CampaignDto, NpcSummaryDto, PagedResult } from '../../core/api/api.models';
+import { PtBrPaginatorIntl } from '../../shared/paginator-intl';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import { NpcsApi } from './npcs.api';
 
@@ -35,6 +36,8 @@ const PAGE_SIZES = [10, 20, 50];
   ],
   templateUrl: './npc-list.page.html',
   styleUrl: './npc-list.page.scss',
+  // Registrado aqui (e não no app.config) para o paginador não entrar no carregamento inicial do app.
+  providers: [{ provide: MatPaginatorIntl, useClass: PtBrPaginatorIntl }],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NpcListPage {

@@ -33,6 +33,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/npcs/npc-list.page').then((m) => m.NpcListPage),
       },
       {
+        path: 'npcs/new',
+        title: 'Novo NPC · NpcForge',
+        loadComponent: () => import('./features/npcs/npc-form.page').then((m) => m.NpcFormPage),
+        canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],
+      },
+      {
+        path: 'npcs/:id/edit',
+        title: 'Editar NPC · NpcForge',
+        loadComponent: () => import('./features/npcs/npc-form.page').then((m) => m.NpcFormPage),
+        canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],
+      },
+      {
         path: 'campaigns/:id',
         title: 'Campanha · NpcForge',
         loadComponent: () => import('./features/campaigns/campaign-detail.page').then((m) => m.CampaignDetailPage),

@@ -1,0 +1,195 @@
+<div [formGroup]="group()" class="stat-block-form">
+  <section>
+    <h3>Básico</h3>
+    <div class="grid basic">
+      <mat-form-field appearance="outline">
+        <mat-label>Tamanho</mat-label>
+        <mat-select formControlName="size">
+          @for (size of sizes; track size.value) {
+            <mat-option [value]="size.value">{{ size.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de criatura</mat-label>
+        <input matInput formControlName="creatureType" placeholder="Ex.: humanoide (anão)" />
+        <mat-error>{{ fieldError(group().controls.creatureType) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Alinhamento</mat-label>
+        <input matInput formControlName="alignment" placeholder="Ex.: leal e neutro" />
+        <mat-error>{{ fieldError(group().controls.alignment) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nível de desafio (ND)</mat-label>
+        <mat-select formControlName="challengeRating">
+          @for (cr of challengeRatings; track cr) {
+            <mat-option [value]="cr">{{ cr }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ fieldError(group().controls.challengeRating) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Classe de Armadura (CA)</mat-label>
+        <input matInput type="number" formControlName="armorClass" min="1" max="30" />
+        <mat-error>{{ fieldError(group().controls.armorClass) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Pontos de vida (PV)</mat-label>
+        <input matInput type="number" formControlName="hitPoints" min="1" />
+        <mat-error>{{ fieldError(group().controls.hitPoints) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Dados de vida</mat-label>
+        <input matInput formControlName="hitDice" placeholder="2d8 + 2" />
+        <mat-hint>Ex.: 2d8 + 2</mat-hint>
+        <mat-error>{{ group().controls.hitDice.hasError('pattern') ? 'Use o formato 2d8 + 2.' : fieldError(group().controls.hitDice) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Deslocamento</mat-label>
+        <input matInput formControlName="speed" placeholder="9 m" />
+        <mat-error>{{ fieldError(group().controls.speed) }}</mat-error>
+      </mat-form-field>
+    </div>
+  </section>
+
+  <section>
+    <h3>Atributos</h3>
+    <div class="grid abilities">
+      @for (ability of abilities; track ability.key) {
+        <mat-form-field appearance="outline">
+          <mat-label>{{ ability.label }}</mat-label>
+          <input matInput type="number" [formControlName]="ability.key" min="1" max="30" />
+          <span matTextSuffix class="mod">{{ modifier(value()?.[ability.key]) }}</span>
+          <mat-error>{{ fieldError(group().controls[ability.key]) }}</mat-error>
+        </mat-form-field>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h3>Detalhes</h3>
+    <div class="grid details">
+      <mat-form-field appearance="outline">
+        <mat-label>Salvaguardas</mat-label>
+        <input matInput formControlName="savingThrows" placeholder="Ex.: For +5, Con +4" />
+        <mat-error>{{ fieldError(group().controls.savingThrows) }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Perícias</mat-label>
+        <input matInput formControlName="skills" placeholder="Ex.: Atletismo +5" />
+        <mat-error>{{ fieldError(group().controls.skills) }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Sentidos</mat-label>
+        <input matInput formControlName="senses" placeholder="Ex.: Visão no Escuro 18 m" />
+        <mat-error>{{ fieldError(group().controls.senses) }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Idiomas</mat-label>
+        <input matInput formControlName="languages" placeholder="Ex.: Comum, Anão" />
+        <mat-error>{{ fieldError(group().controls.languages) }}</mat-error>
+      </mat-form-field>
+    </div>
+  </section>
+
+  <section>
+    <div class="list-header">
+      <h3>Características</h3>
+      <button matButton type="button" (click)="addFeature('traits')" [disabled]="traits().length >= listMax">
+        <mat-icon>add</mat-icon> Adicionar
+      </button>
+    </div>
+    @for (item of traits(); track item; let i = $index) {
+      <div class="list-item" [formGroup]="item">
+        <mat-form-field appearance="outline" class="item-name">
+          <mat-label>Nome</mat-label>
+          <input matInput formControlName="name" />
+          <mat-error>{{ fieldError(item.controls.name) }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="item-description">
+          <mat-label>Descrição</mat-label>
+          <textarea matInput formControlName="description" rows="2"></textarea>
+          <mat-error>{{ fieldError(item.controls.description) }}</mat-error>
+        </mat-form-field>
+        <button matIconButton type="button" (click)="removeAt(group().controls.traits, i)" aria-label="Remover característica">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    } @empty {
+      <p class="list-empty">Nenhuma característica.</p>
+    }
+  </section>
+
+  <section>
+    <div class="list-header">
+      <h3>Ações</h3>
+      <button matButton type="button" (click)="addAction()" [disabled]="actions().length >= listMax">
+        <mat-icon>add</mat-icon> Adicionar
+      </button>
+    </div>
+    @for (item of actions(); track item; let i = $index) {
+      <div class="list-item action" [formGroup]="item">
+        <mat-form-field appearance="outline" class="item-name">
+          <mat-label>Nome</mat-label>
+          <input matInput formControlName="name" />
+          <mat-error>{{ fieldError(item.controls.name) }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="item-bonus">
+          <mat-label>Bônus de ataque</mat-label>
+          <input matInput type="number" formControlName="attackBonus" placeholder="+5" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="item-damage">
+          <mat-label>Dano</mat-label>
+          <input matInput formControlName="damage" placeholder="1d8 + 3 Contundente" />
+          <mat-error>{{ fieldError(item.controls.damage) }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="item-description">
+          <mat-label>Descrição</mat-label>
+          <textarea matInput formControlName="description" rows="2"></textarea>
+          <mat-error>{{ fieldError(item.controls.description) }}</mat-error>
+        </mat-form-field>
+        <button matIconButton type="button" (click)="removeAt(group().controls.actions, i)" aria-label="Remover ação">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    } @empty {
+      <p class="list-empty">Nenhuma ação.</p>
+    }
+  </section>
+
+  <section>
+    <div class="list-header">
+      <h3>Reações</h3>
+      <button matButton type="button" (click)="addFeature('reactions')" [disabled]="reactions().length >= listMax">
+        <mat-icon>add</mat-icon> Adicionar
+      </button>
+    </div>
+    @for (item of reactions(); track item; let i = $index) {
+      <div class="list-item" [formGroup]="item">
+        <mat-form-field appearance="outline" class="item-name">
+          <mat-label>Nome</mat-label>
+          <input matInput formControlName="name" />
+          <mat-error>{{ fieldError(item.controls.name) }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="item-description">
+          <mat-label>Descrição</mat-label>
+          <textarea matInput formControlName="description" rows="2"></textarea>
+          <mat-error>{{ fieldError(item.controls.description) }}</mat-error>
+        </mat-form-field>
+        <button matIconButton type="button" (click)="removeAt(group().controls.reactions, i)" aria-label="Remover reação">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    } @empty {
+      <p class="list-empty">Nenhuma reação.</p>
+    }
+  </section>
+</div>
