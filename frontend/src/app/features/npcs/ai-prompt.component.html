@@ -3,7 +3,7 @@
     <div class="header">
       <h2><mat-icon>auto_awesome</mat-icon> Gerar com IA</h2>
       @if (usage(); as u) {
-        <span class="counter" [class.exhausted]="exhausted()">{{ u.used }} de {{ u.limit }} gerações hoje</span>
+        <span class="counter" [class.exhausted]="exhausted()">{{ usageLabel(u) }}</span>
       }
     </div>
 
@@ -59,6 +59,13 @@
           </button>
         }
       </div>
+
+      @if (usage()?.limit === 0) {
+        <p class="local-hint">
+          <mat-icon inline>memory</mat-icon>
+          A IA roda no seu computador: cada geração ocupa a placa de vídeo por alguns segundos. Use à vontade, mas com moderação se estiver jogando ou com outros programas pesados abertos.
+        </p>
+      }
 
       @if (exhausted()) {
         <p class="exhausted-hint">Você usou todas as gerações de hoje. Novas gerações às {{ resetsAtLabel() }}. Você ainda pode preencher o NPC à mão.</p>

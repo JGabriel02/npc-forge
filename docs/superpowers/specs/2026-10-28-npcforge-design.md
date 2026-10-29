@@ -23,7 +23,7 @@ O projeto tem dois objetivos de igual peso:
 2. A partir de um prompt curto, a IA gera um NPC completo (com ou sem ficha D&D 5e), que o usuário revisa, edita e salva.
 3. No formulário de edição, cada campo relevante pode ser regerado individualmente pela IA (botão ✨).
 4. Respostas inválidas da IA nunca são salvas; valores fora das regras são corrigidos e sinalizados ao usuário.
-5. Cada usuário pode fazer até 5 gerações completas de NPC por dia; o app mostra quantas restam.
+5. O app mostra quantas gerações o usuário fez no dia. Por padrão não há limite (a IA roda no computador do próprio usuário); um limite diário pode ser configurado para quando houver provedor pago.
 6. Um usuário pode tornar um NPC público; outros usuários encontram esse NPC numa galeria e adicionam uma cópia à própria campanha.
 7. `docker compose up` + `ng serve` sobem o ambiente completo; os testes passam sem precisar de IA real.
 
@@ -36,7 +36,7 @@ O projeto tem dois objetivos de igual peso:
 - CRUD de NPCs em dois modos: **narrativo** (sem ficha) e **com ficha D&D 5e** (para inimigos). A ficha pode ser adicionada ou removida depois.
 - Geração completa de NPC por IA a partir de prompt.
 - Sugestão por campo (✨) no formulário.
-- Limite diário de 5 gerações completas de NPC por usuário.
+- Contador diário de gerações por usuário, com limite opcional (padrão: sem limite).
 - NPCs públicos: galeria de NPCs públicos e cópia de um NPC público para a própria conta/campanha.
 - Provedores de IA: Ollama (local, padrão) e um provedor gratuito em nuvem, atrás da mesma interface.
 
@@ -214,7 +214,7 @@ Campos aceitos em `suggest-field`: `name`, `race`, `occupation`, `appearance`, `
 
 - Erros no formato `ProblemDetails`: 400 (validação), 401, 404, 429 (limite atingido), 502 (falha da IA), 504 (timeout da IA).
 - Limites de uso da IA (detalhes na seção 6, "Limite diário de gerações"):
-  - `generate-npc`: **5 por dia** por usuário (configurável em `Ai:DailyGenerationLimit`), persistido no banco.
+  - `generate-npc`: contador diário por usuário persistido no banco; limite configurável em `Ai:DailyGenerationLimit`, **padrão 0 = sem limite** (decisão: na versão local a IA não tem custo; o limite existe para um futuro provedor pago). A tela mostra um aviso de que cada geração ocupa a GPU.
   - `suggest-field`: sem limite diário; apenas limite por minuto contra abuso (middleware nativo de rate limiting do ASP.NET Core, padrão de 10 por minuto, configurável).
 - O rascunho gerado pela IA só é persistido quando o usuário salva via `POST /npcs`, que reaplica todas as validações.
 
@@ -294,7 +294,7 @@ Todas as rotas, exceto login e registro, são protegidas por `authGuard`.
 3. O usuário edita e pode regerar campos individuais com ✨.
 4. "Salvar" → `POST /npcs`. O passo 1 é opcional: o usuário pode preencher tudo manualmente.
 
-A tela mostra o contador "X de 5 gerações hoje" (via `GET /ai/usage`). Quando o limite acaba, o botão "✨ Gerar com IA" fica desabilitado com o horário de renovação, mas o preenchimento manual e os botões ✨ por campo continuam funcionando.
+A tela mostra o contador ("N gerações hoje" sem limite, ou "X de N gerações hoje" com limite configurado), via `GET /ai/usage`. Quando o limite acaba, o botão "✨ Gerar com IA" fica desabilitado com o horário de renovação, mas o preenchimento manual e os botões ✨ por campo continuam funcionando.
 
 ### Fluxo de NPC público
 

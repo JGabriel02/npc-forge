@@ -32,6 +32,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Jwt:Key", TestJwtKey);
         builder.UseSetting("Ai:Enabled", AiEnabled.ToString());
         builder.UseSetting("Ai:TimeoutSeconds", "5");
+        // Os testes do limite usam 5; o padrão do app é 0 (sem limite).
+        builder.UseSetting("Ai:DailyGenerationLimit", "5");
 
         if (AiEnabled)
         {

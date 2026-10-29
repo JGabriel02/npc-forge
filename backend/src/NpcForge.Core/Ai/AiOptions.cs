@@ -19,8 +19,12 @@ public class AiOptions
     [Range(5, 600)]
     public int TimeoutSeconds { get; set; } = 120;
 
-    [Range(1, 1000)]
-    public int DailyGenerationLimit { get; set; } = 5;
+    /// <summary>
+    /// Gerações por usuário por dia. 0 = sem limite (padrão: a IA roda no computador do próprio usuário,
+    /// sem custo). Útil com um provedor pago na nuvem.
+    /// </summary>
+    [Range(0, 1000)]
+    public int DailyGenerationLimit { get; set; }
 
     public OllamaOptions Ollama { get; set; } = new();
 }

@@ -66,6 +66,15 @@
   color: var(--mat-sys-on-surface-variant);
 }
 
+.local-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 12px 0 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .exhausted-hint {
   margin: 12px 0 0;
   color: var(--mat-sys-on-surface-variant);

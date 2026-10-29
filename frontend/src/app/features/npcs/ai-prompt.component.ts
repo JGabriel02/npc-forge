@@ -14,6 +14,7 @@ import { AiUsageDto, CHALLENGE_RATINGS, NpcDraft } from '../../core/api/api.mode
 import { errorMessages } from '../../core/api/problem-details';
 import { fieldError } from '../../shared/field-error';
 import { AiApi } from './ai.api';
+import { isExhausted, usageLabel } from './ai-usage';
 
 export interface GeneratedDraft {
   draft: NpcDraft;
@@ -53,10 +54,8 @@ export class AiPromptComponent {
   protected readonly generating = signal(false);
   protected readonly messages = signal<string[]>([]);
 
-  protected readonly exhausted = computed(() => {
-    const u = this.usage();
-    return u !== null && u.used >= u.limit;
-  });
+  protected readonly exhausted = computed(() => isExhausted(this.usage()));
+  protected readonly usageLabel = usageLabel;
   protected readonly resetsAtLabel = computed(() => {
     const u = this.usage();
     return u ? new Date(u.resetsAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';

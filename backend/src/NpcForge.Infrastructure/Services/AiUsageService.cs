@@ -9,6 +9,9 @@ public class AiUsageService(AppDbContext db, TimeProvider time, IOptions<AiOptio
 {
     private readonly int _limit = options.Value.DailyGenerationLimit;
 
+    // 0 = sem limite: a reserva sempre passa, mas o contador continua registrando o uso.
+    private int EffectiveLimit => _limit == 0 ? int.MaxValue : _limit;
+
     public async Task<AiUsageDto> GetAsync(string userId, CancellationToken ct)
     {
         var now = time.GetUtcNow();
@@ -31,7 +34,7 @@ public class AiUsageService(AppDbContext db, TimeProvider time, IOptions<AiOptio
             VALUES ({userId}, {today}, 1)
             ON CONFLICT ("UserId", "Date")
             DO UPDATE SET "GenerationCount" = "AiUsages"."GenerationCount" + 1
-            WHERE "AiUsages"."GenerationCount" < {_limit}
+            WHERE "AiUsages"."GenerationCount" < {EffectiveLimit}
             RETURNING "GenerationCount" AS "Value"
             """).ToListAsync(ct);
 

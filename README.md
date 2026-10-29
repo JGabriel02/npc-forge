@@ -38,7 +38,7 @@ Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop
 
 ## Rodando com IA localmente
 
-Com a IA ligada, a tela **Novo NPC** ganha o card **"✨ Gerar com IA"**: você descreve o NPC ("anão ferreiro rabugento, guarda um segredo") e a IA preenche o formulário, com ou sem ficha de combate. Nada é salvo até você revisar e clicar em Salvar. Cada usuário tem **5 gerações por dia**.
+Com a IA ligada, a tela **Novo NPC** ganha o card **"✨ Gerar com IA"**: você descreve o NPC ("anão ferreiro rabugento, guarda um segredo") e a IA preenche o formulário, com ou sem ficha de combate. Nada é salvo até você revisar e clicar em Salvar. Não há limite de gerações: a IA roda na sua máquina, então o único custo é a placa de vídeo ocupada por alguns segundos a cada geração. Se quiser um teto diário por usuário, defina `AI_DAILY_LIMIT` no `.env`.
 
 A IA roda **no seu computador** com o [Ollama](https://ollama.com), sem custo e sem enviar dados para fora.
 
@@ -79,7 +79,9 @@ A IA roda **no seu computador** com o [Ollama](https://ollama.com), sem custo e 
 
    No Windows e no macOS (Docker Desktop) não é preciso fazer nada.
 
-5. **Sem GPU ou com pouca memória:** use um modelo menor e dê mais tempo para a resposta. No `.env`, `OLLAMA_MODEL=qwen2.5:7b` (ou `qwen2.5:3b`), e no `docker-compose.yml`, `Ai__TimeoutSeconds: 180` no serviço `api`. Não esqueça de rodar `ollama pull` do modelo escolhido.
+5. **Outros modelos:** qualquer modelo do Ollama funciona; basta baixá-lo com `ollama pull` e colocar o nome em `OLLAMA_MODEL`. O padrão, `qwen2.5:14b`, foi testado com este app (bom em português e em seguir o formato JSON). Modelos maiores costumam gerar NPCs melhores e mais lentos; modelos pequenos podem errar mais o formato — o app corrige o que der e avisa o que ajustou.
+
+   **Sem GPU ou com pouca memória:** use um modelo menor e dê mais tempo para a resposta. No `.env`, `OLLAMA_MODEL=qwen2.5:7b` (ou `qwen2.5:3b`), e no `docker-compose.yml`, `Ai__TimeoutSeconds: 180` no serviço `api`. Não esqueça de rodar `ollama pull` do modelo escolhido.
 
 6. **Sem o Ollama instalado:** dá para rodá-lo dentro do Docker (bem mais lento sem GPU):
 
@@ -153,7 +155,7 @@ Decisões e o design completo: [docs/superpowers/specs](docs/superpowers/specs/2
 
 1. ~~Fundação do backend~~
 2. ~~Frontend Angular (sem IA)~~
-3. IA (Ollama) + limite diário de gerações
+3. ~~IA local (Ollama), com contador diário de gerações~~
 4. Sugestões por campo ✨
 5. NPCs públicos
 6. Provedor de IA em nuvem, polimento e prints neste README

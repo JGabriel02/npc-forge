@@ -3,6 +3,7 @@ using NpcForge.Core.Ai;
 using NpcForge.Core.Entities;
 using NpcForge.Infrastructure.Identity;
 using NpcForge.Infrastructure.Persistence;
+using NpcForge.Infrastructure.Services;
 
 namespace NpcForge.IntegrationTests.Ai;
 
@@ -75,6 +76,25 @@ public class AiUsageServiceTests(ApiFactory factory)
 
         Assert.Equal(Limit, results.Count(r => r));
         Assert.Equal(Limit, (await WithService(s => s.GetAsync(userId, CancellationToken.None))).Used);
+    }
+
+    [Fact]
+    public async Task LimitZero_MeansUnlimited_ButStillCounts()
+    {
+        var userId = await CreateUserAsync();
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var unlimited = new AiUsageService(db, TimeProvider.System,
+            Microsoft.Extensions.Options.Options.Create(new AiOptions { DailyGenerationLimit = 0 }));
+
+        var results = new List<bool>();
+        for (var i = 0; i < 8; i++)
+            results.Add(await unlimited.TryReserveAsync(userId, CancellationToken.None));
+
+        Assert.All(results, Assert.True);
+        var usage = await unlimited.GetAsync(userId, CancellationToken.None);
+        Assert.Equal(8, usage.Used);
+        Assert.Equal(0, usage.Limit);
     }
 
     // Cada chamada usa seu próprio escopo (e DbContext), como requisições HTTP diferentes.
