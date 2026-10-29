@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using NpcForge.Api.Ai;
 using NpcForge.Api.Auth;
 using NpcForge.Core.Ai;
 using NpcForge.Core.Common;
@@ -7,6 +8,7 @@ namespace NpcForge.Api.Controllers;
 
 [ApiController]
 [Route("api/ai")]
+[RequiresAi]
 public class AiController(INpcGenerationService generation, IAiUsageService usage) : ControllerBase
 {
     /// <summary>Gera um rascunho de NPC (não salva). Consome uma geração do limite diário se der certo.</summary>
