@@ -4,19 +4,20 @@
 
 **Goal:** A partir de um prompt curto ("anão ferreiro rabugento, ND 2"), a IA gera um NPC completo (com ou sem ficha D&D 5e) que preenche o formulário de criação; respostas ruins do modelo são corrigidas ou recusadas, e cada usuário tem até 5 gerações por dia.
 
-**Architecture:** No Core: `IAiProvider` (só fala com o modelo, sem saber de RPG), `PromptBuilder` (monta os prompts a partir de templates), `NpcDraftValidator` (parse + correção do JSON, código puro) e `NpcGenerationService` (orquestra limite, prompt, chamada, nova tentativa e timeout). Na Infrastructure: `OllamaProvider` (HTTP para a API do Ollama) e `AiUsageService` (contador diário no Postgres com reserva atômica). Na Api: `AiController`. No front: um card de prompt no topo de `/npcs/new` que preenche o formulário existente.
+**Architecture:** No Core: `IAiProvider` (só fala com o modelo, sem saber de RPG), `PromptBuilder` (monta os prompts a partir de templates), `NpcDraftValidator` (parse + correção do JSON, código puro) e `NpcGenerationService` (orquestra limite, prompt, chamada, nova tentativa e timeout). Na Infrastructure: `OllamaProvider` (HTTP para a API do Ollama) e `AiUsageService` (contador diário no Postgres com reserva atômica). Na Api: `AiController`. No front: um card de prompt no topo de `/npcs/new` que preenche o formulário existente. Tudo isso fica atrás da chave `Ai:Enabled` (padrão `false`): a versão web roda sem IA, e quem quiser liga a IA localmente seguindo o tutorial do README.
 
 **Tech Stack:** .NET 10, Ollama (API `/api/chat` com saída estruturada por JSON schema), EF Core + Npgsql (SQL atômico), xUnit + Testcontainers, Angular 22 + Vitest.
 
-**Spec:** `docs/superpowers/specs/2026-10-28-npcforge-design.md` (seção 5 "IA", seção 6 inteira, seção 7 "Fluxo de criação" e contador, seção 8 itens de IA e limite diário).
+**Spec:** `docs/superpowers/specs/2026-10-28-npcforge-design.md` (seção 5 "IA" e `/features`, seção 6 inteira — incluindo "IA ligada ou desligada (feature flag)" —, seção 7 "Fluxo de criação" e contador, seção 8 itens de IA e limite diário).
 
 **Fora deste plano:** `suggest-field` e botões ✨ (Plano 4), provedor em nuvem e limite por minuto (Plano 6).
 
 ## Global Constraints
 
+- **Feature flag `Ai:Enabled`, padrão `false`** (spec §6): desligada, os endpoints `/api/ai/*` respondem 404 "A IA está desativada nesta instalação.", nenhum serviço de IA é registrado nem exige configuração, e o frontend esconde o card de IA. Uma única base de código — nada de branches separados por versão.
 - **Ollama nativo no Windows (decisão deste plano, diverge da spec):** a spec previa o Ollama no `docker compose`; como a máquina de desenvolvimento já tem o Ollama instalado e uma GPU NVIDIA (RTX 5060 Ti, 16 GB), usamos o Ollama nativo — no Windows, GPU dentro de container exige configuração extra. A API no container acessa `http://host.docker.internal:11434`; rodando a API fora do Docker, `http://localhost:11434`. O `docker-compose.yml` ganha um serviço `ollama` opcional sob o profile `ollama-docker` para quem não tem o Ollama instalado.
 - Modelo padrão: `qwen2.5:14b` (bom em português e em JSON estruturado; ~9 GB, cabe nos 16 GB de VRAM). Configurável em `Ai:Ollama:Model`.
-- Configuração (seção `Ai`): `Provider` = `Ollama`; `Ollama:BaseUrl`; `Ollama:Model`; `TimeoutSeconds` = 60; `DailyGenerationLimit` = 5.
+- Configuração (seção `Ai`): `Enabled` = `false`; `Provider` = `Ollama`; `Ollama:BaseUrl`; `Ollama:Model`; `TimeoutSeconds` = 60; `DailyGenerationLimit` = 5.
 - Todo o conteúdo gerado em **português do Brasil**; regras de D&D 5e (Livro do Jogador 2024).
 - O endpoint de geração **não salva** nada: devolve um rascunho; salvar continua sendo `POST /api/npcs`.
 - Limite diário: dia em **UTC**, conta só gerações bem-sucedidas, reserva atômica no banco (requisições simultâneas não passam do limite), devolução da reserva quando a geração falha ou é cancelada.
@@ -30,7 +31,8 @@
 2. **Corrida no limite:** 10 gerações simultâneas com limite 5 → exatamente 5 sucessos e 5 respostas 429. Teste na Task 4.
 3. **Ollama desligado ou modelo não baixado:** a resposta é 502 com "A IA não está disponível agora." e a reserva do limite é devolvida — o usuário não perde uma geração do dia. Teste na Task 5.
 4. **ND pedido x ND gerado:** com `challengeRating: "2"` no pedido, o rascunho sai com ND 2 mesmo que o modelo invente outro (com aviso). Sem ficha pedida, uma ficha devolvida pelo modelo é descartada. Teste na Task 5.
-5. **Gerar por cima de um formulário já preenchido:** a geração substitui os campos gerados, mas preserva a campanha escolhida e as anotações do mestre. Teste na Task 7.
+5. **Gerar por cima de um formulário já preenchido:** a geração substitui os campos gerados, mas preserva a campanha escolhida e as anotações do mestre. Teste na Task 8.
+6. **IA desligada (versão web):** a API sobe sem nenhuma configuração do Ollama, `/api/ai/*` responde 404 em português, `/api/features` responde `{ "ai": false }` sem login, e o front esconde o card — inclusive se `/api/features` falhar. Testes nas Tasks 6 e 8.
 
 ---
 
@@ -117,7 +119,7 @@ Regras do `Parse` (cada correção gera um aviso em português no formato `"Ajus
 - Create: `backend/src/NpcForge.Core/Ai/PromptBuilder.cs`
 - Create: `backend/src/NpcForge.Core/Ai/Prompts/system.txt`, `generate-npc.txt`, `retry.txt`, `npc-draft.schema.json`, `stat-block.schema.json` (embedded resources no `.csproj`)
 - Create: `backend/src/NpcForge.Infrastructure/Ai/OllamaProvider.cs`
-- Modify: `backend/src/NpcForge.Infrastructure/DependencyInjection.cs` (opções `Ai` com `ValidateOnStart`; `AddHttpClient<IAiProvider, OllamaProvider>` com `BaseAddress` de `Ai:Ollama:BaseUrl`)
+- Modify: `backend/src/NpcForge.Infrastructure/DependencyInjection.cs` (opções `Ai` sempre registradas — o `Enabled` é lido pelo filtro da Task 6; `PromptBuilder` e `AddHttpClient<IAiProvider, OllamaProvider>` com `BaseAddress` de `Ai:Ollama:BaseUrl` **só quando `Ai:Enabled` é `true`**; com `ValidateOnStart` nas opções do Ollama apenas nesse caso)
 - Modify: `backend/src/NpcForge.Api/appsettings.json` (seção `Ai` com os padrões)
 - Test: `backend/tests/NpcForge.UnitTests/Ai/PromptBuilderTests.cs`, `backend/tests/NpcForge.UnitTests/Ai/OllamaProviderTests.cs` (o projeto de testes unitários passa a referenciar a Infrastructure)
 
@@ -125,7 +127,7 @@ Regras do `Parse` (cada correção gera um aviso em português no formato `"Ajus
 - Produces:
   - `interface IAiProvider { Task<string> CompleteJsonAsync(string systemPrompt, string userPrompt, string jsonSchema, CancellationToken ct); }`
   - `class AiProviderException(string message, Exception? inner = null) : Exception` — modelo indisponível, modelo não encontrado, resposta HTTP de erro.
-  - `class AiOptions { const Section = "Ai"; string Provider = "Ollama"; int TimeoutSeconds = 60 [Range(5, 600)]; int DailyGenerationLimit = 5 [Range(1, 1000)]; OllamaOptions Ollama }`, `class OllamaOptions { string BaseUrl = "http://localhost:11434"; string Model = "qwen2.5:14b"; }`
+  - `class AiOptions { const Section = "Ai"; bool Enabled = false; string Provider = "Ollama"; int TimeoutSeconds = 60 [Range(5, 600)]; int DailyGenerationLimit = 5 [Range(1, 1000)]; OllamaOptions Ollama }`, `class OllamaOptions { string BaseUrl = "http://localhost:11434"; string Model = "qwen2.5:14b"; }`
   - `record AiPrompt(string System, string User, string JsonSchema)`
   - `class PromptBuilder` (singleton, carrega os recursos uma vez):
     - `AiPrompt BuildGenerateNpc(string userPrompt, string? campaignSetting, bool withStatBlock, string? challengeRating)`
@@ -204,7 +206,7 @@ Conteúdo dos prompts (decisões):
 - Create: `backend/src/NpcForge.Api/Controllers/AiController.cs`
 - Modify: `backend/src/NpcForge.Core/Common/ServiceResult.cs` (novos valores de `ServiceError`)
 - Test: `backend/tests/NpcForge.IntegrationTests/Ai/FakeAiProvider.cs`, `backend/tests/NpcForge.IntegrationTests/Ai/GenerateNpcTests.cs`
-- Modify: `backend/tests/NpcForge.IntegrationTests/ApiFactory.cs` (troca `IAiProvider` pelo `FakeAiProvider` singleton; `Ai:TimeoutSeconds = 2`)
+- Modify: `backend/tests/NpcForge.IntegrationTests/ApiFactory.cs` (`Ai:Enabled = true`; troca `IAiProvider` pelo `FakeAiProvider` singleton; `Ai:TimeoutSeconds = 2`)
 
 **Interfaces:**
 - Consumes: `NpcDraftValidator` (Task 2), `PromptBuilder`/`IAiProvider`/`AiProviderException`/`AiOptions` (Task 3), `IAiUsageService` (Task 4).
@@ -247,37 +249,74 @@ Fluxo do `GenerateAsync`:
 
 ---
 
-### Task 6: Ollama de verdade — configuração, compose e teste manual
+### Task 6: Chave `Ai:Enabled` e endpoint `/api/features`
 
 **Files:**
-- Modify: `docker-compose.yml` (api: `Ai__Ollama__BaseUrl: http://host.docker.internal:11434`, `extra_hosts: ["host.docker.internal:host-gateway"]`; serviço `ollama` com image `ollama/ollama`, volume e porta 11434 sob `profiles: ["ollama-docker"]`)
-- Modify: `.env.example` (`OLLAMA_MODEL=qwen2.5:14b` repassado como `Ai__Ollama__Model`)
-- Modify: `README.md` (seção "IA": instalar/iniciar o Ollama, `ollama pull qwen2.5:14b`, como trocar de modelo, o que fazer sem GPU — modelo menor e `Ai__TimeoutSeconds` maior —, e a alternativa `docker compose --profile ollama-docker up`)
+- Create: `backend/src/NpcForge.Api/Ai/RequiresAiAttribute.cs` (filtro de recurso)
+- Create: `backend/src/NpcForge.Api/Controllers/FeaturesController.cs`
+- Modify: `backend/src/NpcForge.Api/Controllers/AiController.cs` (`[RequiresAi]` na classe)
+- Test: `backend/tests/NpcForge.IntegrationTests/AiDisabledApiFactory.cs`, `backend/tests/NpcForge.IntegrationTests/Ai/AiFeatureFlagTests.cs`
+
+**Interfaces:**
+- Consumes: `AiOptions.Enabled` (Task 3), `AiController` (Task 5).
+- Produces:
+  - `class RequiresAiAttribute : Attribute, IFilterFactory` que cria um `IResourceFilter` — com `Ai:Enabled = false`, encerra a requisição com 404 `ProblemDetails` "A IA está desativada nesta instalação." **antes** de o controller ser criado (assim a falta dos serviços de IA no DI não causa erro 500).
+  - `GET /api/features` (`[AllowAnonymous]`) → `record FeaturesDto(bool Ai)`.
+  - `AiDisabledApiFactory : ApiFactory` com `Ai:Enabled = false` e **sem** nenhuma configuração `Ai:Ollama:*`; coleção xUnit própria `"api-ai-disabled"`.
+
+- [ ] **Step 1: Escrever os testes que falham**
+- Com `ApiFactory` (IA ligada): `Features_ReportsAiEnabled_WithoutLogin` → `{ "ai": true }` sem token.
+- Com `AiDisabledApiFactory`: `Features_ReportsAiDisabled`; `GenerateNpc_WhenDisabled_Returns404InPortuguese`; `Usage_WhenDisabled_Returns404`; `CrudStillWorks_WhenAiDisabled` (cadastrar, criar campanha e NPC normalmente).
+- [ ] **Step 2: Rodar e ver falhar.**
+- [ ] **Step 3: Implementar filtro, controller e factory de teste.**
+- [ ] **Step 4: Rodar a suíte inteira** — `dotnet test backend/NpcForge.slnx` → todos PASS.
+- [ ] **Step 5: Commit** — `feat: add Ai:Enabled feature flag and features endpoint`
+
+---
+
+### Task 7: Ollama de verdade — configuração, compose, tutorial e teste manual
+
+**Files:**
+- Modify: `docker-compose.yml` (api: `Ai__Enabled: ${AI_ENABLED:-false}`, `Ai__Ollama__Model: ${OLLAMA_MODEL:-qwen2.5:14b}`, `Ai__Ollama__BaseUrl: http://host.docker.internal:11434`, `extra_hosts: ["host.docker.internal:host-gateway"]`; serviço `ollama` com image `ollama/ollama`, volume e porta 11434 sob `profiles: ["ollama-docker"]`)
+- Modify: `.env.example` (`AI_ENABLED=false` e `OLLAMA_MODEL=qwen2.5:14b`, com comentário explicando)
+- Modify: `README.md` — seção **"Rodando com IA localmente"** em formato de tutorial passo a passo:
+  1. Instalar o Ollama (link oficial) e confirmar com `ollama --version`.
+  2. Baixar o modelo: `ollama pull qwen2.5:14b` (~9 GB; precisa de GPU com ~10 GB de VRAM para ficar rápido).
+  3. No `.env`: `AI_ENABLED=true` (e `OLLAMA_MODEL` se quiser outro).
+  4. `docker compose up -d --build` e abrir "Novo NPC": o card "Gerar com IA" aparece.
+  5. Sem GPU ou com pouca memória: usar um modelo menor (ex.: `qwen2.5:7b` ou `qwen2.5:3b`) e aumentar `Ai__TimeoutSeconds`.
+  6. Sem Ollama instalado: `docker compose --profile ollama-docker up -d` e `docker compose exec ollama ollama pull qwen2.5:14b` (mais lento sem GPU), apontando `Ai__Ollama__BaseUrl` para `http://ollama:11434`.
+  7. Problemas comuns: "A IA não está disponível agora" (Ollama desligado ou modelo não baixado) e como conferir com `ollama list`.
+  - Também uma linha na seção "Como rodar" deixando claro que a IA vem desligada e apontando para o tutorial.
 
 - [ ] **Step 1: Baixar o modelo e validar o Ollama**
 Run: iniciar o Ollama; `ollama pull qwen2.5:14b`; `ollama list`.
 Expected: modelo listado.
-- [ ] **Step 2: Atualizar compose, `.env.example` e README; `docker compose up -d --build`.**
+- [ ] **Step 2: Atualizar compose, `.env.example` e README; colocar `AI_ENABLED=true` no `.env` local; `docker compose up -d --build`.**
+Expected: `GET /api/features` → `{ "ai": true }`. Com `AI_ENABLED` ausente → `{ "ai": false }` e a API sobe normalmente.
 - [ ] **Step 3: Teste manual pela API** (curl com usuário de teste): `POST /api/ai/generate-npc` com `{"prompt":"anão ferreiro rabugento","withStatBlock":true,"challengeRating":"2"}` e outro sem ficha com campanha de terror gótico.
 Expected: 200 em menos de 60 s; textos em português; ND 2; ficha passa no `POST /api/npcs` sem 400; `Used` aumenta. Registrar o tempo de resposta e qualquer aviso recorrente no ledger — avisos frequentes indicam ajuste de prompt (feito aqui, com novo teste no `PromptBuilderTests` se mudar o template).
-- [ ] **Step 4: Commit** — `chore: wire native Ollama into compose and document AI setup`
+- [ ] **Step 4: Commit** — `chore: wire native Ollama into compose and add local AI tutorial`
 
 ---
 
-### Task 7: Frontend — gerar NPC com IA na tela de criação
+### Task 8: Frontend — gerar NPC com IA na tela de criação
 
 **Files:**
+- Create: `frontend/src/app/core/features/features.service.ts`
 - Create: `frontend/src/app/features/npcs/ai.api.ts`
 - Create: `frontend/src/app/features/npcs/ai-prompt.component.ts` (+ html/scss)
 - Modify: `frontend/src/app/core/api/api.models.ts` (`NpcDraft`, `GenerateNpcRequest`, `GenerateNpcResponse`, `AiUsageDto`)
 - Modify: `frontend/src/app/features/npcs/npc-form.model.ts` (`draftToFormValue`)
 - Modify: `frontend/src/app/features/npcs/npc-form.page.ts` (+ html) — o card só aparece na criação
 - Modify: `frontend/src/app/core/api/problem-details.ts` (502/504/429 usam o título da API, que já vem em português)
-- Test: `frontend/src/app/features/npcs/npc-form.model.spec.ts`, `frontend/src/app/core/api/problem-details.spec.ts`
+- Test: `frontend/src/app/features/npcs/npc-form.model.spec.ts`, `frontend/src/app/core/api/problem-details.spec.ts`, `frontend/src/app/core/features/features.service.spec.ts`
 
 **Interfaces:**
-- Consumes: `POST /api/ai/generate-npc`, `GET /api/ai/usage` (Task 5); `loadNpcForm`, `NpcFormValue` (Plano 2).
+- Consumes: `POST /api/ai/generate-npc`, `GET /api/ai/usage` (Task 5); `GET /api/features` (Task 6); `loadNpcForm`, `NpcFormValue` (Plano 2).
 - Produces:
+  - `FeaturesService` (`providedIn: 'root'`): `readonly ai: Signal<boolean>` (começa `false`); carregado uma vez no `provideAppInitializer` com `GET /api/features`; erro → continua `false` (Review Focus 6).
+  - O card de IA só é renderizado quando `features.ai()` é `true`; com IA desligada, `/npcs/new` fica exatamente como no Plano 2.
   - `AiApi` (`providedIn: 'root'`): `generateNpc(req: GenerateNpcRequest): Observable<GenerateNpcResponse>`, `usage(): Observable<AiUsageDto>`.
   - `draftToFormValue(draft: NpcDraft, current: NpcFormValue): NpcFormValue` — substitui nome, raça, profissão, aparência, personalidade, histórico e ficha (`includeStatBlock = draft.statBlock !== null`; `null` → `defaultStatBlockValue()`), **preserva** `campaignId` e `notes` do formulário atual.
   - `AiPromptComponent`:
@@ -289,6 +328,7 @@ Expected: 200 em menos de 60 s; textos em português; ND 2; ficha passa no `POST
   - `errorMessages`: para 429/502/504, usar `problem.title` (já em português) em vez das mensagens genéricas.
 
 - [ ] **Step 1: Escrever os testes que falham**
+- `FeaturesService turns ai on when the API says so` e `FeaturesService keeps ai off when the request fails` (Review Focus 6)
 - `draftToFormValue preserves campaign and notes` (Review Focus 5)
 - `draftToFormValue without stat block turns the toggle off and resets the sheet to defaults`
 - `draftToFormValue maps null optional texts to empty strings`
@@ -297,6 +337,6 @@ Expected: 200 em menos de 60 s; textos em português; ND 2; ficha passa no `POST
 - [ ] **Step 3: Implementar modelos, `AiApi`, `draftToFormValue`, ajuste no `errorMessages`, `AiPromptComponent` e integração no `NpcFormPage`.**
 - [ ] **Step 4: Rodar e ver passar** — `npx ng test --watch=false` e `npx ng build` (sem aviso de orçamento).
 - [ ] **Step 5: Verificar no navegador com o Ollama real**
-Gerar um NPC narrativo numa campanha; gerar um inimigo com ND 3 (ficha preenchida, modificadores corretos); gerar de novo por cima (campanha e anotações preservadas); cancelar uma geração em andamento (contador não diminui); salvar o NPC gerado; esgotar as 5 gerações (botão desabilitado com horário de renovação — pode-se baixar `Ai__DailyGenerationLimit` temporariamente); parar o Ollama e gerar (mensagem "A IA não está disponível agora." e contador intacto); largura de celular.
+Gerar um NPC narrativo numa campanha; gerar um inimigo com ND 3 (ficha preenchida, modificadores corretos); gerar de novo por cima (campanha e anotações preservadas); cancelar uma geração em andamento (contador não diminui); salvar o NPC gerado; esgotar as 5 gerações (botão desabilitado com horário de renovação — pode-se baixar `Ai__DailyGenerationLimit` temporariamente); parar o Ollama e gerar (mensagem "A IA não está disponível agora." e contador intacto); largura de celular; por fim, `AI_ENABLED=false` + `docker compose up -d` → `/npcs/new` sem o card e criação manual funcionando.
 Expected: todos os comportamentos acima.
 - [ ] **Step 6: Commit** — `feat(web): generate NPCs with AI on the create page`

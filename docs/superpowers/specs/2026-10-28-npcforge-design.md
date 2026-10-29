@@ -206,6 +206,7 @@ Base `/api`. Todas as rotas, exceto `/auth/register` e `/auth/login`, exigem JWT
 | POST | `/ai/generate-npc` | `{ prompt, campaignId?, withStatBlock, challengeRating? }` | `{ draft: NpcDraft, warnings: string[], usage }` |
 | POST | `/ai/suggest-field` | `{ field, npcDraft, campaignId?, instruction? }` | `{ field, value, warnings: string[] }` |
 | GET | `/ai/usage` | — | `{ used, limit, resetsAt }` |
+| GET | `/features` | — | `{ ai: boolean }` — público (sem login); diz ao frontend se a IA está ligada nesta instalação |
 
 Campos aceitos em `suggest-field`: `name`, `race`, `occupation`, `appearance`, `personality`, `background`, `traits`, `actions`, `reactions`, `abilityScores`.
 
@@ -226,6 +227,17 @@ AiController → NpcGenerationService → PromptBuilder
                        │
                        └─► NpcDraftValidator (parse, validação, correção) → draft + warnings
 ```
+
+### IA ligada ou desligada (feature flag)
+
+A mesma base de código serve a duas formas de rodar o app, controladas pela chave `Ai:Enabled` (padrão **`false`**):
+
+- **Versão web (deploy público):** `Ai:Enabled = false`. Os endpoints `/ai/*` respondem **404** com o título "A IA está desativada nesta instalação.", nada de IA é registrado na injeção de dependências (nenhuma configuração de provedor é exigida) e o frontend esconde todos os elementos de IA. Criar e editar NPCs manualmente funciona normalmente.
+- **Versão local com IA:** `Ai:Enabled = true` + Ollama instalado. O README traz um tutorial passo a passo ("Rodando com IA localmente").
+- O frontend descobre o modo pelo `GET /features`; se a chamada falhar, assume IA desligada.
+- No futuro (provedor em nuvem), a versão web pode ligar a IA só mudando a configuração, sem branch ou código separado.
+
+Decisão: uma chave de configuração em vez de dois branches permanentes, para que correções e testes valham para as duas versões.
 
 ### Componentes
 
@@ -348,7 +360,7 @@ npc-forge/
 
 - `docker compose up` sobe Postgres, Ollama e a API. O Angular roda com `ng serve` em desenvolvimento.
 - Migrations do EF Core aplicadas automaticamente no startup apenas no ambiente de desenvolvimento.
-- Configuração por variáveis de ambiente: connection string, `Ai__Provider`, `Ai__TimeoutSeconds`, `Ai__DailyGenerationLimit`, chave do provedor em nuvem, segredo e expiração do JWT. O `.env.example` fica versionado, e nenhum segredo é commitado.
+- Configuração por variáveis de ambiente: connection string, `Ai__Enabled`, `Ai__Provider`, `Ai__TimeoutSeconds`, `Ai__DailyGenerationLimit`, chave do provedor em nuvem, segredo e expiração do JWT. O `.env.example` fica versionado, e nenhum segredo é commitado.
 - CORS liberado apenas para a origem do front configurada.
 - Preparação para deploy (fora da v1): Dockerfile do front (build + nginx) e troca de provedor via configuração.
 
