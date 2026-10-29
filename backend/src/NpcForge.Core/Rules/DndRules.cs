@@ -44,6 +44,40 @@ public static partial class DndRules
         return match.Groups["sign"].Value == "+" ? $"{dice} + {modifier}" : $"{dice} – {modifier}";
     }
 
+    /// <summary>Média de PV como nos livros: floor(qtd × (lados + 1) / 2) + modificador, nunca menos que 1.</summary>
+    public static int AverageHitPoints(string hitDice)
+    {
+        var match = HitDiceRegex().Match(hitDice);
+        if (!match.Success)
+            throw new ArgumentException($"Dados de vida inválidos: '{hitDice}'.", nameof(hitDice));
+
+        var count = int.Parse(match.Groups["count"].Value);
+        var sides = int.Parse(match.Groups["sides"].Value);
+        var modifier = match.Groups["sign"].Success ? int.Parse(match.Groups["mod"].Value) : 0;
+        if (match.Groups["sign"].Value is not ("" or "+")) modifier = -modifier;
+
+        return Math.Max(1, count * (sides + 1) / 2 + modifier);
+    }
+
+    /// <summary>"1/8" → 0,125; "12" → 12.</summary>
+    public static double ChallengeRatingValue(string cr)
+    {
+        if (!IsValidChallengeRating(cr))
+            throw new ArgumentException($"Nível de desafio inválido: '{cr}'.", nameof(cr));
+
+        return cr switch
+        {
+            "1/8" => 0.125,
+            "1/4" => 0.25,
+            "1/2" => 0.5,
+            _ => int.Parse(cr),
+        };
+    }
+
+    /// <summary>ND oficial mais próximo de um valor qualquer; em empate, o menor.</summary>
+    public static string NearestChallengeRating(double value)
+        => ChallengeRatings.MinBy(cr => (Math.Abs(ChallengeRatingValue(cr) - value), ChallengeRatingValue(cr)))!;
+
     // Sinais aceitos: + e os três "menos" que aparecem em textos: hífen (-), travessão (–) e menos tipográfico (−).
     [GeneratedRegex(@"^\s*(?<count>\d+)\s*[dD]\s*(?<sides>\d+)\s*(?:(?<sign>[+\-–−])\s*(?<mod>\d+))?\s*$")]
     private static partial Regex HitDiceRegex();
