@@ -121,7 +121,9 @@ A conta demo é criada no primeiro clique em **Entrar como visitante**, com o co
 
 ## Endereços desta instalação
 
-Preencha depois de criar (nada secreto aqui):
+Nada secreto aqui:
 
-- Site: `https://<gerado>.azurestaticapps.net`
-- API: `https://npcforge-api-<sufixo>.azurewebsites.net`
+- Site: `https://calm-mushroom-02327b90f.5.azurestaticapps.net`
+- API: `https://npcforge-api-dxbwdeethba8dyar.westus3-01.azurewebsites.net` (App Service `npcforge-api`, região West US 3)
+
+> Apps novos do App Service ganham um **domínio padrão único** (nome + código + região), não `<nome>.azurewebsites.net`. Copie o endereço do campo **Domínio padrão** na Visão geral do app; é ele que vai em `frontend/src/environments/environment.ts` e em `API_URL` no workflow.
