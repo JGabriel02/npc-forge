@@ -3,17 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NpcForge.Core.Ai;
 using NpcForge.Core.Demo;
+using NpcForge.Core.LocalUser;
 
 namespace NpcForge.Api.Controllers;
 
-public record FeaturesDto(bool Ai, bool Demo);
+public record FeaturesDto(bool Ai, bool Demo, bool LocalUser);
 
 /// <summary>Diz ao frontend quais funcionalidades opcionais estão ligadas nesta instalação.</summary>
 [ApiController]
 [Route("api/features")]
 [AllowAnonymous]
-public class FeaturesController(IOptions<AiOptions> ai, IOptions<DemoOptions> demo) : ControllerBase
+public class FeaturesController(IOptions<AiOptions> ai, IOptions<DemoOptions> demo, IOptions<LocalUserOptions> localUser)
+    : ControllerBase
 {
     [HttpGet]
-    public FeaturesDto Get() => new(ai.Value.Enabled, demo.Value.Enabled);
+    public FeaturesDto Get() => new(ai.Value.Enabled, demo.Value.Enabled, localUser.Value.Enabled);
 }

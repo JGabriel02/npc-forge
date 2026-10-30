@@ -4,9 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using NpcForge.Core.Ai;
 using NpcForge.Core.Campaigns;
 using NpcForge.Core.Demo;
+using NpcForge.Core.LocalUser;
 using NpcForge.Core.Npcs;
 using NpcForge.Infrastructure.Ai;
 using NpcForge.Infrastructure.Demo;
+using NpcForge.Infrastructure.LocalUser;
 using NpcForge.Infrastructure.Persistence;
 using NpcForge.Infrastructure.Services;
 
@@ -24,6 +26,8 @@ public static class DependencyInjection
         services.AddScoped<INpcTransferService, NpcTransferService>();
         services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.Section);
         services.AddScoped<DemoSeeder>();
+        services.AddOptions<LocalUserOptions>().BindConfiguration(LocalUserOptions.Section);
+        services.AddScoped<LocalUserSeeder>();
 
         services.AddAi(configuration);
         return services;

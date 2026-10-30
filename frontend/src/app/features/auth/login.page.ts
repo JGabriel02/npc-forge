@@ -33,6 +33,10 @@ export class LoginPage {
   protected readonly messages = signal<string[]>([]);
   protected readonly fieldError = fieldError;
   protected readonly demoAvailable = inject(FeaturesService).demo;
+  /** Versão local: mostra a conta fixa criada pela API (mesmos valores do LocalUserSeeder). */
+  protected readonly localUser = inject(FeaturesService).localUser;
+  protected readonly localEmail = 'mestre@npcforge.local';
+  protected readonly localPassword = 'senha1234';
 
   /** Conta de visitante: entra sem cadastro, só para ver o app funcionando. */
   protected enterAsVisitor(): void {

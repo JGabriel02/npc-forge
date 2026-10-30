@@ -34,6 +34,9 @@ services:
       Ai__DailyGenerationLimit: ${AI_DAILY_LIMIT:-0}
       # Por padrão, o Ollama instalado no próprio computador (fora do Docker, com acesso à GPU).
       Ai__Ollama__BaseUrl: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      # Conta fixa da versão local (mestre@npcforge.local / senha1234), criada vazia na subida.
+      # Só funciona em Development: a API não inicia com ela ligada em outro ambiente.
+      LocalUser__Enabled: ${LOCAL_USER_ENABLED:-true}
       # Conta de visitante (somente leitura): ligada na versão web; aqui só para testar.
       Demo__Enabled: ${DEMO_ENABLED:-false}
     extra_hosts:

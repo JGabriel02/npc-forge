@@ -44,7 +44,15 @@ Pré-requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop
    npx ng serve
    ```
 
-   Abra `http://localhost:4200` e crie uma conta.
+   Abra `http://localhost:4200` e entre com a **conta local**, que a API cria vazia na primeira subida:
+
+   | E-mail | Senha |
+   |---|---|
+   | `mestre@npcforge.local` | `senha1234` |
+
+   A tela de login também mostra esses dados. Se preferir, crie outra conta normalmente.
+
+   > A conta local só existe na sua máquina: a API se recusa a iniciar com ela ligada fora do ambiente de desenvolvimento, então ela nunca vale num site publicado. Para desligá-la, use `LOCAL_USER_ENABLED=false` no `.env`.
 
 ## Rodando com IA localmente
 

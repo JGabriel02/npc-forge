@@ -10,13 +10,13 @@ import { LoginPage } from './login.page';
 describe('LoginPage', () => {
   const auth = { login: vi.fn(), loginAsDemo: vi.fn() };
 
-  function render(demo: boolean) {
+  function render(demo: boolean, localUser = false) {
     TestBed.configureTestingModule({
       imports: [LoginPage],
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: auth },
-        { provide: FeaturesService, useValue: { demo: signal(demo), ai: signal(false) } },
+        { provide: FeaturesService, useValue: { demo: signal(demo), ai: signal(false), localUser: signal(localUser) } },
       ],
     });
     const fixture = TestBed.createComponent(LoginPage);
@@ -58,5 +58,16 @@ describe('LoginPage', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Muitas tentativas. Aguarde um minuto e tente de novo.');
+  });
+
+  it('shows the local account on a local installation', () => {
+    const text = render(false, true).nativeElement.textContent;
+
+    expect(text).toContain('mestre@npcforge.local');
+    expect(text).toContain('senha1234');
+  });
+
+  it('does not show the local account on the web version', () => {
+    expect(render(true, false).nativeElement.textContent).not.toContain('mestre@npcforge.local');
   });
 });
