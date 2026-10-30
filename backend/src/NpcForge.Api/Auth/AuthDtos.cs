@@ -11,4 +11,4 @@ public record LoginRequest([Required] string Email, [Required] string Password);
 
 public record LoginResponse(string Token, DateTime ExpiresAt);
 
-public record MeResponse(string Id, string Email, string DisplayName);
+public record MeResponse(string Id, string Email, string DisplayName, bool IsDemo);

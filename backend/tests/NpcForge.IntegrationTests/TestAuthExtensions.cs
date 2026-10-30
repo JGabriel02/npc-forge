@@ -25,5 +25,18 @@ public static class TestAuthExtensions
         return client;
     }
 
+
+    /// <summary>Entra como visitante (conta demo somente leitura) e devolve um client autenticado.</summary>
+    public static async Task<HttpClient> CreateDemoClientAsync(this ApiFactory factory)
+    {
+        var client = factory.CreateClient();
+        var login = await client.PostAsync("/api/auth/demo", null);
+        login.EnsureSuccessStatusCode();
+        var body = await login.Content.ReadFromJsonAsync<LoginBody>();
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", body!.Token);
+        return client;
+    }
+
     private record LoginBody(string Token, DateTime ExpiresAt);
 }

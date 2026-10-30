@@ -76,7 +76,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddAuthRateLimit(builder.Configuration);
 
 builder.Services.AddProblemDetails();
-builder.Services.AddControllers()
+builder.Services.AddControllers(o => o.Filters.Add<DemoReadOnlyFilter>())
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)))
     .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = InvalidJsonResponses.Create);
 builder.Services.AddOpenApi();
