@@ -34,6 +34,8 @@ services:
       Ai__DailyGenerationLimit: ${AI_DAILY_LIMIT:-0}
       # Por padrão, o Ollama instalado no próprio computador (fora do Docker, com acesso à GPU).
       Ai__Ollama__BaseUrl: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      # Conta de visitante (somente leitura): ligada na versão web; aqui só para testar.
+      Demo__Enabled: ${DEMO_ENABLED:-false}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

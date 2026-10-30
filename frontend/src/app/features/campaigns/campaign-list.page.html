@@ -1,7 +1,7 @@
 <section class="page">
   <header class="page-header">
     <h1>Campanhas</h1>
-    @if (campaigns()?.length) {
+    @if (campaigns()?.length && !auth.isDemo()) {
       <button matButton="filled" type="button" (click)="create()">
         <mat-icon>add</mat-icon> Nova campanha
       </button>
@@ -14,9 +14,11 @@
     @if (list.length === 0) {
       <div class="empty-state">
         <p>Nenhuma campanha ainda. Campanhas agrupam seus NPCs e dão contexto para a IA.</p>
-        <button matButton="filled" type="button" (click)="create()">
-          <mat-icon>add</mat-icon> Nova campanha
-        </button>
+        @if (!auth.isDemo()) {
+          <button matButton="filled" type="button" (click)="create()">
+            <mat-icon>add</mat-icon> Nova campanha
+          </button>
+        }
       </div>
     } @else {
       <ul class="grid">

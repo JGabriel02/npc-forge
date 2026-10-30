@@ -9,6 +9,7 @@ import { Router, RouterLink } from '@angular/router';
 import { errorMessages } from '../../core/api/problem-details';
 import { fieldError } from '../../shared/field-error';
 import { AuthService } from '../../core/auth/auth.service';
+import { FeaturesService } from '../../core/features/features.service';
 
 @Component({
   selector: 'app-login-page',
@@ -31,6 +32,20 @@ export class LoginPage {
   protected readonly submitting = signal(false);
   protected readonly messages = signal<string[]>([]);
   protected readonly fieldError = fieldError;
+  protected readonly demoAvailable = inject(FeaturesService).demo;
+
+  /** Conta de visitante: entra sem cadastro, só para ver o app funcionando. */
+  protected enterAsVisitor(): void {
+    this.submitting.set(true);
+    this.messages.set([]);
+    this.auth.loginAsDemo().subscribe({
+      next: () => void this.router.navigateByUrl('/npcs'),
+      error: (error: unknown) => {
+        this.messages.set(errorMessages(this.form, error));
+        this.submitting.set(false);
+      },
+    });
+  }
 
   protected submit(): void {
     if (this.form.invalid) {

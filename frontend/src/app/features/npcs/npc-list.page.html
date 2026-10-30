@@ -2,9 +2,11 @@
   <header class="page-header">
     <h1>NPCs</h1>
     <div class="header-actions">
-      <button matButton="outlined" type="button" (click)="importNpcs()">
-        <mat-icon>upload</mat-icon> Importar
-      </button>
+      @if (!auth.isDemo()) {
+        <button matButton="outlined" type="button" (click)="importNpcs()">
+          <mat-icon>upload</mat-icon> Importar
+        </button>
+      }
       <button
         matButton="outlined"
         type="button"
@@ -14,7 +16,9 @@
       >
         <mat-icon>download</mat-icon> Exportar
       </button>
-      <a matButton="filled" routerLink="/npcs/new"><mat-icon>add</mat-icon> Novo NPC</a>
+      @if (!auth.isDemo()) {
+        <a matButton="filled" routerLink="/npcs/new"><mat-icon>add</mat-icon> Novo NPC</a>
+      }
     </div>
   </header>
 
@@ -62,7 +66,9 @@
           <button matButton type="button" (click)="clearFilters()">Limpar filtros</button>
         } @else {
           <p>Nenhum NPC ainda. Crie o primeiro taverneiro, vilão ou informante da sua mesa.</p>
-          <a matButton="filled" routerLink="/npcs/new"><mat-icon>add</mat-icon> Novo NPC</a>
+          @if (!auth.isDemo()) {
+            <a matButton="filled" routerLink="/npcs/new"><mat-icon>add</mat-icon> Novo NPC</a>
+          }
         }
       </div>
     } @else {

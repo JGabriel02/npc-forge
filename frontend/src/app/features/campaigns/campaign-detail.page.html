@@ -18,10 +18,12 @@
 
         <header class="page-header">
           <h1>{{ c.name }}</h1>
-          <div class="actions">
-            <button matButton="outlined" type="button" (click)="edit()"><mat-icon>edit</mat-icon> Editar</button>
-            <button matButton type="button" class="danger" (click)="remove()"><mat-icon>delete</mat-icon> Excluir</button>
-          </div>
+          @if (!auth.isDemo()) {
+            <div class="actions">
+              <button matButton="outlined" type="button" (click)="edit()"><mat-icon>edit</mat-icon> Editar</button>
+              <button matButton type="button" class="danger" (click)="remove()"><mat-icon>delete</mat-icon> Excluir</button>
+            </div>
+          }
         </header>
 
         @if (c.description) {
@@ -36,9 +38,11 @@
 
         <div class="npcs-header">
           <h2>NPCs ({{ npcs().length }})</h2>
-          <a matButton="filled" routerLink="/npcs/new" [queryParams]="{ campaignId: c.id }">
-            <mat-icon>add</mat-icon> Novo NPC
-          </a>
+          @if (!auth.isDemo()) {
+            <a matButton="filled" routerLink="/npcs/new" [queryParams]="{ campaignId: c.id }">
+              <mat-icon>add</mat-icon> Novo NPC
+            </a>
+          }
         </div>
 
         @if (npcs().length === 0) {

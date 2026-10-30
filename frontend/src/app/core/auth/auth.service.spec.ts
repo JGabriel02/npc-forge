@@ -103,4 +103,39 @@ describe('AuthService', () => {
     expect(auth.isLoggedIn()).toBe(false);
     expect(navigate).toHaveBeenCalledWith('/login');
   });
+
+  it('loginAsDemo posts to /auth/demo, loads the user and marks the session as visitor', () => {
+    const auth = setup();
+
+    auth.loginAsDemo().subscribe();
+    const demo = http.expectOne(`${api}/auth/demo`);
+    expect(demo.request.method).toBe('POST');
+    demo.flush({ token: 'jwt-demo', expiresAt: future() });
+    http.expectOne(`${api}/auth/me`).flush({ ...me, email: 'visitante@npcforge.demo', isDemo: true });
+
+    expect(auth.getToken()).toBe('jwt-demo');
+    expect(auth.isDemo()).toBe(true);
+  });
+
+  it('isDemo is false for a regular user', () => {
+    const auth = setup();
+
+    auth.login('mestre@x.com', 'senha1234').subscribe();
+    http.expectOne(`${api}/auth/login`).flush({ token: 'jwt-123', expiresAt: future() });
+    http.expectOne(`${api}/auth/me`).flush({ ...me, isDemo: false });
+
+    expect(auth.isDemo()).toBe(false);
+  });
+
+  it('leaveDemoToRegister ends the visitor session and opens the register page', async () => {
+    localStorage.setItem('npcforge.token', 'jwt-demo');
+    localStorage.setItem('npcforge.expiresAt', future());
+    const auth = setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    await auth.leaveDemoToRegister();
+
+    expect(auth.isLoggedIn()).toBe(false);
+    expect(navigate).toHaveBeenCalledWith('/register');
+  });
 });

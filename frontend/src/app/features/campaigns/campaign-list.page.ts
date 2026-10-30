@@ -8,6 +8,7 @@ import { RouterLink } from '@angular/router';
 import { CampaignDto } from '../../core/api/api.models';
 import { CampaignFormDialog, CampaignFormDialogData } from './campaign-form.dialog';
 import { CampaignsApi } from './campaigns.api';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-campaign-list-page',
@@ -17,6 +18,7 @@ import { CampaignsApi } from './campaigns.api';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CampaignListPage {
+  protected readonly auth = inject(AuthService);
   private readonly api = inject(CampaignsApi);
   private readonly dialog = inject(MatDialog);
 

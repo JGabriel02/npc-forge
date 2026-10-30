@@ -13,6 +13,7 @@ import { exportErrorMessage, saveResponse } from '../../shared/download';
 import { ignoreNotFound } from '../../shared/ignore-not-found';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import { NpcsApi } from './npcs.api';
+import { AuthService } from '../../core/auth/auth.service';
 import { StatBlockViewComponent } from './stat-block-view.component';
 
 type LoadState = 'loading' | 'loaded' | 'not-found' | 'error';
@@ -25,6 +26,7 @@ type LoadState = 'loading' | 'loaded' | 'not-found' | 'error';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NpcViewPage {
+  protected readonly auth = inject(AuthService);
   private readonly npcsApi = inject(NpcsApi);
   private readonly campaignsApi = inject(CampaignsApi);
   private readonly dialog = inject(MatDialog);

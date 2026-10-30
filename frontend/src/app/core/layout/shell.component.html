@@ -16,6 +16,14 @@
   </button>
 </mat-toolbar>
 
+@if (auth.isDemo()) {
+  <div class="visitor-banner" role="status">
+    <mat-icon>visibility</mat-icon>
+    <span>Você está como visitante: pode ver e exportar, mas não alterar.</span>
+    <button matButton type="button" (click)="auth.leaveDemoToRegister()">Criar conta</button>
+  </div>
+}
+
 <main>
   <router-outlet />
 </main>
