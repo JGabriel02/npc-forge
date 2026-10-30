@@ -19,6 +19,9 @@ public class DemoSeeder(AppDbContext db, UserManager<AppUser> users, TimeProvide
 {
     public const string Email = "visitante@npcforge.demo";
 
+    /// <summary>Domínio reservado à demo: ninguém se cadastra com ele (senão poderia "virar" a conta dos visitantes).</summary>
+    public static bool IsReserved(string email) => email.Trim().EndsWith("@npcforge.demo", StringComparison.OrdinalIgnoreCase);
+
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter(allowIntegerValues: false) },
@@ -26,7 +29,7 @@ public class DemoSeeder(AppDbContext db, UserManager<AppUser> users, TimeProvide
 
     public async Task<AppUser> EnsureSeededAsync(CancellationToken ct)
     {
-        if (await users.FindByEmailAsync(Email) is { } existing) return existing;
+        if (await users.FindByEmailAsync(Email) is { } existing) return Checked(existing);
 
         // Conta e conteúdo na mesma transação: ninguém vê uma conta demo pela metade.
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
@@ -87,9 +90,14 @@ public class DemoSeeder(AppDbContext db, UserManager<AppUser> users, TimeProvide
     {
         await transaction.RollbackAsync(ct);
         db.ChangeTracker.Clear();
-        return await users.FindByEmailAsync(Email)
-            ?? throw new InvalidOperationException("A conta demo deveria existir depois de um conflito de criação.");
+        return Checked(await users.FindByEmailAsync(Email)
+            ?? throw new InvalidOperationException("A conta demo deveria existir depois de um conflito de criação."));
     }
+
+    // A conta demo nunca tem senha. Com senha, alguém a criou por fora: melhor falhar do que entregá-la aos visitantes.
+    private static AppUser Checked(AppUser user) => user.PasswordHash is null
+        ? user
+        : throw new InvalidOperationException($"O e-mail {Email} pertence a uma conta com senha; a demo não vai usá-la.");
 
     private record SeedCampaigns(List<SeedNpc> Npcs);
 

@@ -22,6 +22,12 @@ public class AuthController(UserManager<AppUser> users, JwtTokenService tokens) 
     [EnableRateLimiting(AuthRateLimit.Policy)]
     public async Task<ActionResult<MeResponse>> Register(RegisterRequest request)
     {
+        if (DemoSeeder.IsReserved(request.Email))
+        {
+            ModelState.AddModelError(nameof(request.Email), "Este e-mail é reservado.");
+            return ValidationProblem(ModelState);
+        }
+
         var user = new AppUser { UserName = request.Email, Email = request.Email, DisplayName = request.DisplayName };
         IdentityResult result;
         try
