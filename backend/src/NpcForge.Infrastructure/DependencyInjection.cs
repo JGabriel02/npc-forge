@@ -6,6 +6,7 @@ using NpcForge.Core.Campaigns;
 using NpcForge.Core.Demo;
 using NpcForge.Core.Npcs;
 using NpcForge.Infrastructure.Ai;
+using NpcForge.Infrastructure.Demo;
 using NpcForge.Infrastructure.Persistence;
 using NpcForge.Infrastructure.Services;
 
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<INpcService, NpcService>();
         services.AddScoped<INpcTransferService, NpcTransferService>();
         services.AddOptions<DemoOptions>().BindConfiguration(DemoOptions.Section);
+        services.AddScoped<DemoSeeder>();
 
         services.AddAi(configuration);
         return services;

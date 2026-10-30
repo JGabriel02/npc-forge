@@ -26,6 +26,21 @@ public static class NpcMapping
             DndRules.AbilityModifier(s.Int), DndRules.AbilityModifier(s.Wis), DndRules.AbilityModifier(s.Cha)),
         DndRules.ProficiencyBonus(s.ChallengeRating));
 
+    /// <summary>NPC novo (id e datas novos) a partir de um NPC de arquivo de exportação.</summary>
+    internal static Npc ToNewNpc(this ExportedNpc exported, string userId, Guid? campaignId, DateTime now)
+    {
+        var npc = new Npc
+        {
+            Id = Guid.NewGuid(), UserId = userId, CampaignId = campaignId,
+            Name = exported.Name, Race = exported.Race, Occupation = exported.Occupation,
+            Appearance = exported.Appearance, Personality = exported.Personality,
+            Background = exported.Background, Notes = exported.Notes,
+            CreatedAt = now, UpdatedAt = now,
+        };
+        npc.StatBlock = exported.StatBlock?.ToEntity(npc.Id); // normaliza os dados de vida
+        return npc;
+    }
+
     /// <summary>NPC no formato do arquivo de exportação (só o conteúdo, sem ids, campanha ou datas).</summary>
     public static ExportedNpc ToExported(this Npc n) => new(
         n.Name, n.Race, n.Occupation, n.Appearance, n.Personality, n.Background, n.Notes,
