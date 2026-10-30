@@ -87,13 +87,17 @@ export class AuthService {
   }
 
   /**
-   * "Sair" pelo usuário: navega primeiro e só encerra a sessão se a navegação acontecer.
-   * Se ele cancelar ("Descartar as alterações?"), continua logado na página onde estava.
+   * "Sair" pelo usuário: vai para /logout, cujo guard encerra a sessão e leva ao login.
+   * O Angular confere antes se dá para sair da tela atual: se o usuário cancelar
+   * ("Descartar as alterações?"), o guard nem roda e ele continua logado onde estava.
    */
   async logout(): Promise<void> {
-    if (await this.router.navigateByUrl('/login')) {
-      this.clearSession();
-    }
+    await this.router.navigateByUrl('/logout');
+  }
+
+  /** Encerra a sessão sem navegar (usado pelo logoutGuard, que decide o destino). */
+  endSession(): void {
+    this.clearSession();
   }
 
   /** Sessão inválida (401 da API): encerra na hora, mesmo que a navegação seja interrompida. */

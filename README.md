@@ -8,6 +8,14 @@ Aplicação web para mestres de RPG criarem e organizarem NPCs de D&D 5e, com ou
 >
 > A IA é **opcional** e vem **desligada**: sem ela, o app funciona normalmente com criação manual de NPCs (é assim que roda a versão web). Para gerar NPCs com IA no seu computador, siga [Rodando com IA localmente](#rodando-com-ia-localmente).
 
+## Telas
+
+| Lista de NPCs | Ficha de combate no estilo do livro |
+|---|---|
+| ![Lista de NPCs com filtros por campanha e tipo](docs/images/npcs.png) | ![Página do NPC com aparência, personalidade, anotações do mestre e a ficha de combate](docs/images/npc-ficha.png) |
+
+![Tela de login com o botão Entrar como visitante](docs/images/login.png)
+
 ## Stack
 
 - **Backend:** .NET 10, ASP.NET Core (controllers), EF Core + PostgreSQL, ASP.NET Core Identity + JWT
@@ -176,4 +184,4 @@ Decisões e o design completo: [docs/superpowers/specs](docs/superpowers/specs/2
    - ~~Versão web no ar (Azure + Neon), com conta de visitante e deploy automático~~ ([como publicar](docs/deploy.md))
 4. Sugestões por campo ✨
 5. NPCs públicos
-6. Provedor de IA em nuvem, polimento e prints neste README
+6. Provedor de IA em nuvem e polimento
