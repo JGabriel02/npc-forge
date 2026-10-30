@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, writerGuard } from './core/auth/auth.guards';
+import { authGuard, guestGuard, logoutGuard, writerGuard } from './core/auth/auth.guards';
 
 // loadComponent carrega o código de cada tela só quando ela é aberta (lazy loading).
 export const routes: Routes = [
@@ -15,6 +15,8 @@ export const routes: Routes = [
     canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/register.page').then((m) => m.RegisterPage),
   },
+  // Só encerra a sessão e redireciona para /login (ver logoutGuard).
+  { path: 'logout', canActivate: [logoutGuard], children: [] },
   {
     // Telas logadas: todas dentro do shell (barra de navegação).
     path: '',

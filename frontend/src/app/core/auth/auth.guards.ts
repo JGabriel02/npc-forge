@@ -13,3 +13,12 @@ export const guestGuard: CanActivateFn = () =>
 /** Criar e editar NPC: o visitante (somente leitura) volta para a lista. */
 export const writerGuard: CanActivateFn = () =>
   !inject(AuthService).isDemo() || inject(Router).parseUrl('/npcs');
+
+/**
+ * Rota /logout: encerra a sessão e leva ao login. Encerrar aqui, e não antes de navegar, evita o bug
+ * em que o guestGuard de /login via o token ainda salvo e mandava o usuário de volta para /campaigns.
+ */
+export const logoutGuard: CanActivateFn = () => {
+  inject(AuthService).endSession();
+  return inject(Router).parseUrl('/login');
+};

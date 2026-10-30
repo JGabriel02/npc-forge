@@ -64,31 +64,14 @@ describe('AuthService', () => {
     expect(auth.isLoggedIn()).toBe(true);
   });
 
-  it('logout navigates to /login and then clears storage and user', async () => {
-    localStorage.setItem('npcforge.token', 'jwt-123');
-    localStorage.setItem('npcforge.expiresAt', future());
+  // O fluxo completo (sessão encerrada, cancelar com alterações não salvas) está em logout.spec.ts.
+  it('logout navigates to /logout', async () => {
     const auth = setup();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
     await auth.logout();
 
-    expect(navigate).toHaveBeenCalledWith('/login');
-    expect(localStorage.getItem('npcforge.token')).toBeNull();
-    expect(localStorage.getItem('npcforge.expiresAt')).toBeNull();
-    expect(auth.user()).toBeNull();
-    expect(auth.isLoggedIn()).toBe(false);
-  });
-
-  it('logout keeps the session when the user cancels leaving a page with unsaved changes', async () => {
-    localStorage.setItem('npcforge.token', 'jwt-123');
-    localStorage.setItem('npcforge.expiresAt', future());
-    const auth = setup();
-    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(false);
-
-    await auth.logout();
-
-    expect(localStorage.getItem('npcforge.token')).toBe('jwt-123');
-    expect(auth.isLoggedIn()).toBe(true);
+    expect(navigate).toHaveBeenCalledWith('/logout');
   });
 
   it('expireSession clears the session even before navigating', () => {
