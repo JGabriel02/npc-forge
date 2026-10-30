@@ -10,10 +10,18 @@ using NpcForge.Api.Auth;
 using NpcForge.Api.RateLimiting;
 using NpcForge.Api.Validation;
 using NpcForge.Infrastructure;
+using NpcForge.Core.LocalUser;
 using NpcForge.Infrastructure.Identity;
+using NpcForge.Infrastructure.LocalUser;
 using NpcForge.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// O usuário local tem senha conhecida (está no README): só pode existir na máquina de quem roda o projeto.
+var localUserEnabled = builder.Configuration.GetValue<bool>($"{LocalUserOptions.Section}:{nameof(LocalUserOptions.Enabled)}");
+if (localUserEnabled && !builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+    throw new InvalidOperationException(
+        $"LocalUser:Enabled só pode ser ligado em Development (ambiente atual: {builder.Environment.EnvironmentName}).");
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -92,6 +100,7 @@ if (app.Environment.IsDevelopment())
     // Em desenvolvimento o banco é atualizado sozinho; nos testes o ApiFactory já faz isso.
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+    if (localUserEnabled) await scope.ServiceProvider.GetRequiredService<LocalUserSeeder>().EnsureCreatedAsync();
 }
 
 app.UseForwardedHeaders();

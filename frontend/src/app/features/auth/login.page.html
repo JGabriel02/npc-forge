@@ -3,6 +3,12 @@
     <h1 class="brand">NpcForge</h1>
     <p class="subtitle">Entre para gerenciar seus NPCs.</p>
 
+    @if (localUser()) {
+      <p class="local-hint">
+        Instalação local: entre com <strong>{{ localEmail }}</strong> e a senha <strong>{{ localPassword }}</strong>.
+      </p>
+    }
+
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
       @if (messages().length) {
         <ul class="messages" role="alert">

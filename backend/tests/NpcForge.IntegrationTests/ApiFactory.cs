@@ -28,6 +28,9 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     /// <summary>Conta de visitante; ligada por padrão nos testes (como na versão web).</summary>
     protected virtual bool DemoEnabled => true;
 
+    /// <summary>Usuário local fixo (só versão local). Ligado nos testes para /api/features e o seeder.</summary>
+    protected virtual bool LocalUserEnabled => true;
+
     /// <summary>Alto por padrão: todos os testes fazem cadastro e login do mesmo "IP".</summary>
     protected virtual int AuthPerMinute => 1000;
 
@@ -38,6 +41,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Jwt:Key", TestJwtKey);
         builder.UseSetting("Ai:Enabled", AiEnabled.ToString());
         builder.UseSetting("Demo:Enabled", DemoEnabled.ToString());
+        builder.UseSetting("LocalUser:Enabled", LocalUserEnabled.ToString());
         builder.UseSetting("RateLimit:AuthPerMinute", AuthPerMinute.ToString());
         builder.UseSetting("Ai:TimeoutSeconds", "5");
         // Os testes do limite usam 5; o padrão do app é 0 (sem limite).
