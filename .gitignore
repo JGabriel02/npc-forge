@@ -488,3 +488,6 @@ node_modules/
 
 # Migration bundle do EF (gerado no deploy)
 efbundle*
+
+# Saídas do Playwright (prints e snapshots temporários)
+.playwright-mcp/
