@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SlowServerNotice } from './core/api/slow-server.interceptor';
 
-/** Componente raiz: só hospeda o roteador. Cada rota desenha sua tela dentro do <router-outlet>. */
+/** Componente raiz: hospeda o roteador e o aviso de "servidor acordando". */
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
@@ -9,4 +10,6 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class App {}
+export class App {
+  protected readonly slowServer = inject(SlowServerNotice);
+}

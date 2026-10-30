@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
 // Nessas rotas um 401 significa "credenciais erradas", não "sessão expirada".
-const AUTH_ENDPOINTS = ['/auth/login', '/auth/register'];
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/demo'];
 
 /**
  * Roda em toda requisição HTTP: anexa o JWT nas chamadas à nossa API

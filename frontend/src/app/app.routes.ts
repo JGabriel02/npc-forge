@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guards';
+import { authGuard, guestGuard, writerGuard } from './core/auth/auth.guards';
 
 // loadComponent carrega o código de cada tela só quando ela é aberta (lazy loading).
 export const routes: Routes = [
@@ -34,12 +34,14 @@ export const routes: Routes = [
       },
       {
         path: 'npcs/new',
+        canActivate: [writerGuard],
         title: 'Novo NPC · NpcForge',
         loadComponent: () => import('./features/npcs/npc-form.page').then((m) => m.NpcFormPage),
         canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],
       },
       {
         path: 'npcs/:id/edit',
+        canActivate: [writerGuard],
         title: 'Editar NPC · NpcForge',
         loadComponent: () => import('./features/npcs/npc-form.page').then((m) => m.NpcFormPage),
         canDeactivate: [(page: { canLeave(): boolean }) => page.canLeave()],

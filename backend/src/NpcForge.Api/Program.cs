@@ -2,10 +2,12 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NpcForge.Api.Auth;
+using NpcForge.Api.RateLimiting;
 using NpcForge.Api.Validation;
 using NpcForge.Infrastructure;
 using NpcForge.Infrastructure.Identity;
@@ -61,8 +63,22 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
     // Sem isto, o Angular (outra origem) não consegue ler o nome do arquivo exportado.
     .WithExposedHeaders("Content-Disposition")));
 
+// Na Azure, a requisição chega por um proxy: o IP real do visitante vem no X-Forwarded-For.
+// Sem isto, todos teriam o IP do proxy (e dividiriam o mesmo limite de tentativas). Com o ForwardLimit
+// padrão (1), vale só o último IP da lista, que é o que o proxy acrescenta; valores que o próprio
+// cliente mandou à esquerda são ignorados.
+// Atenção: na Azure, defina ASPNETCORE_FORWARDEDHEADERS_ENABLED=false (ver docs/deploy.md). Se a variável
+// ficar true, o ASP.NET processa o cabeçalho uma segunda vez, e o IP forjado pelo cliente passa a valer.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+builder.Services.AddAuthRateLimit(builder.Configuration);
+
 builder.Services.AddProblemDetails();
-builder.Services.AddControllers()
+builder.Services.AddControllers(o => o.Filters.Add<DemoReadOnlyFilter>())
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)))
     .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = InvalidJsonResponses.Create);
 builder.Services.AddOpenApi();
@@ -78,6 +94,7 @@ if (app.Environment.IsDevelopment())
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler(new ExceptionHandlerOptions
 {
     // Erros de requisição do Kestrel (ex.: corpo acima do [RequestSizeLimit] → 413) mantêm o próprio status;
@@ -87,6 +104,7 @@ app.UseExceptionHandler(new ExceptionHandlerOptions
 app.UseStatusCodePages();
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -26,18 +26,7 @@ public class NpcTransferService(AppDbContext db, TimeProvider time) : INpcTransf
     {
         var now = time.GetUtcNow().UtcDateTime;
         foreach (var exported in file.Npcs!)
-        {
-            var npc = new Npc
-            {
-                Id = Guid.NewGuid(), UserId = userId, CampaignId = null,
-                Name = exported.Name, Race = exported.Race, Occupation = exported.Occupation,
-                Appearance = exported.Appearance, Personality = exported.Personality,
-                Background = exported.Background, Notes = exported.Notes,
-                CreatedAt = now, UpdatedAt = now,
-            };
-            npc.StatBlock = exported.StatBlock?.ToEntity(npc.Id); // normaliza os dados de vida
-            db.Npcs.Add(npc);
-        }
+            db.Npcs.Add(exported.ToNewNpc(userId, campaignId: null, now));
 
         // Um único SaveChanges roda numa transação: ou todos os NPCs entram, ou nenhum.
         await db.SaveChangesAsync(ct);

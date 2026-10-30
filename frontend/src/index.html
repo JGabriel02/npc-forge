@@ -18,6 +18,11 @@
     />
   </head>
   <body>
-    <app-root></app-root>
+    <!-- Aparece até o Angular desenhar a tela. Com o servidor "dormindo" (plano gratuito), isso pode levar um minuto. -->
+    <app-root>
+      <p style="margin: 30vh auto 0; max-width: 32ch; padding: 0 16px; text-align: center; font: 16px/1.5 Roboto, sans-serif; color: #5f5e66">
+        Carregando o NpcForge… a primeira visita do dia pode levar até um minuto.
+      </p>
+    </app-root>
   </body>
 </html>

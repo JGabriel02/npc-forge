@@ -32,9 +32,13 @@
             </p>
           </div>
           <div class="actions">
-            <a matButton="outlined" [routerLink]="['/npcs', n.id, 'edit']"><mat-icon>edit</mat-icon> Editar</a>
+            @if (!auth.isDemo()) {
+              <a matButton="outlined" [routerLink]="['/npcs', n.id, 'edit']"><mat-icon>edit</mat-icon> Editar</a>
+            }
             <button matButton type="button" (click)="exportNpc()" [disabled]="exporting()"><mat-icon>download</mat-icon> Exportar</button>
-            <button matButton type="button" class="danger" (click)="remove()"><mat-icon>delete</mat-icon> Excluir</button>
+            @if (!auth.isDemo()) {
+              <button matButton type="button" class="danger" (click)="remove()"><mat-icon>delete</mat-icon> Excluir</button>
+            }
           </div>
         </header>
 

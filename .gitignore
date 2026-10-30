@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 .env
 node_modules/
 .superpowers/
+
+# Migration bundle do EF (gerado no deploy)
+efbundle*

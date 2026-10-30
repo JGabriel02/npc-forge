@@ -25,12 +25,20 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected virtual bool AiEnabled => true;
 
+    /// <summary>Conta de visitante; ligada por padrão nos testes (como na versão web).</summary>
+    protected virtual bool DemoEnabled => true;
+
+    /// <summary>Alto por padrão: todos os testes fazem cadastro e login do mesmo "IP".</summary>
+    protected virtual int AuthPerMinute => 1000;
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:Default", _postgres.GetConnectionString());
         builder.UseSetting("Jwt:Key", TestJwtKey);
         builder.UseSetting("Ai:Enabled", AiEnabled.ToString());
+        builder.UseSetting("Demo:Enabled", DemoEnabled.ToString());
+        builder.UseSetting("RateLimit:AuthPerMinute", AuthPerMinute.ToString());
         builder.UseSetting("Ai:TimeoutSeconds", "5");
         // Os testes do limite usam 5; o padrão do app é 0 (sem limite).
         builder.UseSetting("Ai:DailyGenerationLimit", "5");

@@ -33,6 +33,12 @@
       </button>
     </form>
 
+    @if (demoAvailable()) {
+      <button matButton="outlined" class="visitor" type="button" (click)="enterAsVisitor()" [disabled]="submitting()">
+        Entrar como visitante
+      </button>
+    }
+
     <p class="switch">Ainda não tem conta? <a routerLink="/register">Criar conta</a></p>
   </mat-card-content>
 </mat-card>

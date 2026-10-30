@@ -14,6 +14,7 @@ import { ignoreNotFound } from '../../shared/ignore-not-found';
 import { NpcsApi } from '../npcs/npcs.api';
 import { CampaignFormDialog, CampaignFormDialogData } from './campaign-form.dialog';
 import { CampaignsApi } from './campaigns.api';
+import { AuthService } from '../../core/auth/auth.service';
 
 type LoadState = 'loading' | 'loaded' | 'not-found' | 'error';
 
@@ -25,6 +26,7 @@ type LoadState = 'loading' | 'loaded' | 'not-found' | 'error';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CampaignDetailPage {
+  protected readonly auth = inject(AuthService);
   private readonly campaignsApi = inject(CampaignsApi);
   private readonly npcsApi = inject(NpcsApi);
   private readonly dialog = inject(MatDialog);

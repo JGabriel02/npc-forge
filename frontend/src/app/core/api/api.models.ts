@@ -4,6 +4,8 @@ export interface MeResponse {
   id: string;
   email: string;
   displayName: string;
+  /** Conta de visitante (somente leitura). */
+  isDemo: boolean;
 }
 
 export interface LoginResponse {

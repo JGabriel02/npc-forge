@@ -14,6 +14,14 @@ public class AiEnabledFeatureTests(ApiFactory factory)
 
         Assert.True(features.GetProperty("ai").GetBoolean());
     }
+
+    [Fact]
+    public async Task Features_ReportsDemo_WithoutLogin()
+    {
+        var features = await factory.CreateClient().GetFromJsonAsync<JsonElement>("/api/features");
+
+        Assert.True(features.GetProperty("demo").GetBoolean());
+    }
 }
 
 [Collection("api-ai-disabled")]

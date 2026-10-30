@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, map, switchMap, tap } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginResponse, MeResponse } from '../api/api.models';
 
@@ -29,6 +29,9 @@ export class AuthService {
   /** true só se houver token ainda não expirado. */
   readonly isLoggedIn = computed(() => isValid(this.session()));
 
+  /** true na conta de visitante: o app esconde tudo que altera dados (a API recusa de qualquer forma). */
+  readonly isDemo = computed(() => this.currentUser()?.isDemo === true);
+
   /** Token para mandar à API, ou null se ausente/expirado. */
   getToken(): string | null {
     const session = this.session();
@@ -41,6 +44,36 @@ export class AuthService {
       switchMap(() => this.loadUser()),
       map(() => undefined),
     );
+  }
+
+  /**
+   * Ao abrir o app com um token salvo: carrega o usuário. Só encerra a sessão se a API recusar o token
+   * (401); servidor acordando, fora do ar ou lento não desloga ninguém.
+   */
+  restoreSession(): Observable<void> {
+    if (!this.getToken()) return of(undefined);
+    return this.loadUser().pipe(
+      map(() => undefined),
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.status === 401) this.expireSession();
+        return of(undefined);
+      }),
+    );
+  }
+
+  /** Entra na conta de visitante (somente leitura); a API cria o conteúdo de exemplo no primeiro uso. */
+  loginAsDemo(): Observable<void> {
+    return this.http.post<LoginResponse>(`${this.api}/auth/demo`, null).pipe(
+      tap((response) => this.saveSession(response)),
+      switchMap(() => this.loadUser()),
+      map(() => undefined),
+    );
+  }
+
+  /** "Criar conta" na faixa do visitante: sai da conta demo e abre o cadastro. */
+  async leaveDemoToRegister(): Promise<void> {
+    this.clearSession();
+    await this.router.navigateByUrl('/register');
   }
 
   register(email: string, password: string, displayName: string): Observable<void> {

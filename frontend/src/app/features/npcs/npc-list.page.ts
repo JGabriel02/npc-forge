@@ -19,6 +19,7 @@ import { exportErrorMessage, saveResponse } from '../../shared/download';
 import { PtBrPaginatorIntl } from '../../shared/paginator-intl';
 import { CampaignsApi } from '../campaigns/campaigns.api';
 import { NpcsApi } from './npcs.api';
+import { AuthService } from '../../core/auth/auth.service';
 
 type NpcType = 'all' | 'withStatBlock' | 'narrative';
 
@@ -45,6 +46,7 @@ const PAGE_SIZES = [10, 20, 50];
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NpcListPage {
+  protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly npcsApi = inject(NpcsApi);

@@ -11,12 +11,18 @@ import { environment } from '../../../environments/environment';
 export class FeaturesService {
   private readonly http = inject(HttpClient);
   private readonly aiEnabled = signal(false);
+  private readonly demoEnabled = signal(false);
 
   readonly ai = this.aiEnabled.asReadonly();
+  /** A instalação tem conta de visitante (só na versão web). */
+  readonly demo = this.demoEnabled.asReadonly();
 
   load(): Observable<void> {
-    return this.http.get<{ ai: boolean }>(`${environment.apiBaseUrl}/features`).pipe(
-      map((features) => this.aiEnabled.set(features.ai === true)),
+    return this.http.get<{ ai: boolean; demo: boolean }>(`${environment.apiBaseUrl}/features`).pipe(
+      map((features) => {
+        this.aiEnabled.set(features.ai === true);
+        this.demoEnabled.set(features.demo === true);
+      }),
       catchError(() => of(undefined)),
     );
   }

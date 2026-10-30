@@ -44,3 +44,23 @@
     display: none;
   }
 }
+
+.visitor-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+  font: var(--mat-sys-body-medium);
+
+  span {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  button {
+    color: inherit;
+  }
+}

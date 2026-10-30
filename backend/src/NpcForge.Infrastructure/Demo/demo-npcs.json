@@ -1,0 +1,187 @@
+{
+  "format": "npcforge-npcs",
+  "version": 1,
+  "exportedAt": "2026-10-29T00:00:00Z",
+  "npcs": [
+    {
+      "campaign": "A Estalagem do Corvo Branco",
+      "name": "Marta Pedraleve",
+      "race": "halfling",
+      "occupation": "dona da Estalagem do Corvo Branco",
+      "appearance": "Baixinha, avental sempre manchado de vinho, um molho de chaves que tilinta a cada passo.",
+      "personality": "Calorosa com quem paga em dia, implacável com caloteiros. Lembra o rosto de todo hóspede.",
+      "background": "Herdou a estalagem do marido, que sumiu numa viagem ao norte há dez anos. Nunca acreditou que ele esteja morto.",
+      "notes": "Guarda as cartas do marido num fundo falso do balcão. A última fala de um mapa para uma mina abandonada.",
+      "statBlock": null
+    },
+    {
+      "campaign": "A Estalagem do Corvo Branco",
+      "name": "Tobias Lenhaverde",
+      "race": "humano",
+      "occupation": "bardo itinerante",
+      "appearance": "Jovem magro de chapéu com pena de garça, alaúde remendado com cordas de cores diferentes.",
+      "personality": "Exagera toda história que conta e se ofende quando alguém conhece a versão verdadeira.",
+      "background": "Fugiu de um conservatório na capital depois de perder uma aposta com o filho de um nobre.",
+      "notes": "Ouve tudo o que se fala nas mesas e vende segredos por um prato de ensopado.",
+      "statBlock": null
+    },
+    {
+      "campaign": "A Estalagem do Corvo Branco",
+      "name": "Gruk Dentequebrado",
+      "race": "meio-orc",
+      "occupation": "leão de chácara da estalagem",
+      "appearance": "Enorme, um dente da frente partido ao meio, cicatriz de queimadura no braço esquerdo.",
+      "personality": "Fala pouco e devagar; adora gatos e tem três dormindo no depósito.",
+      "background": "Ex-gladiador de arena clandestina. Marta pagou a dívida que o mantinha preso e ele nunca mais foi embora.",
+      "notes": "Lealdade absoluta a Marta. Se alguém a ameaçar, luta até cair.",
+      "statBlock": {
+        "size": "Medium",
+        "creatureType": "humanoide (meio-orc)",
+        "alignment": "leal e neutro",
+        "armorClass": 13,
+        "hitPoints": 32,
+        "hitDice": "5d8 + 10",
+        "speed": "9 m",
+        "str": 17, "dex": 12, "con": 15, "int": 8, "wis": 11, "cha": 9,
+        "challengeRating": "1",
+        "savingThrows": null,
+        "skills": "Atletismo +5, Intimidação +3",
+        "senses": "visão no escuro 18 m, Percepção passiva 10",
+        "languages": "Comum, Orc",
+        "traits": [
+          { "name": "Resistência Implacável", "description": "Quando cai a 0 pontos de vida mas não morre na hora, fica com 1 ponto de vida. Uma vez por descanso longo." }
+        ],
+        "actions": [
+          { "name": "Ataques Múltiplos", "description": "Faz dois ataques de porrete.", "attackBonus": null, "damage": null },
+          { "name": "Porrete", "description": "Ataque corpo a corpo com arma, alcance 1,5 m, um alvo.", "attackBonus": 5, "damage": "1d6 + 3 de concussão" }
+        ],
+        "reactions": [
+          { "name": "Protetor", "description": "Quando uma criatura que ele vê ataca um aliado a até 1,5 m, impõe desvantagem na jogada de ataque." }
+        ]
+      }
+    },
+    {
+      "campaign": "Contrabandistas de Porto Névoa",
+      "name": "Isadora Vellanox",
+      "race": "meio-elfa",
+      "occupation": "capitã do navio Garça Cinzenta",
+      "appearance": "Casaco de couro azul desbotado, brinco de prata em forma de âncora, olhar que não pisca.",
+      "personality": "Pragmática e bem-humorada; cumpre a palavra, mas lê cada contrato três vezes.",
+      "background": "Ex-oficial da marinha real, expulsa por se recusar a afundar um barco de refugiados.",
+      "notes": "Contrabandeia remédios para as vilas da costa que o governador deixou sem auxílio. Os jogadores podem descobrir isso tarde.",
+      "statBlock": {
+        "size": "Medium",
+        "creatureType": "humanoide (meio-elfo)",
+        "alignment": "caótico e bom",
+        "armorClass": 15,
+        "hitPoints": 58,
+        "hitDice": "9d8 + 18",
+        "speed": "9 m",
+        "str": 12, "dex": 17, "con": 14, "int": 13, "wis": 12, "cha": 16,
+        "challengeRating": "3",
+        "savingThrows": "Des +5, Sab +3",
+        "skills": "Acrobacia +5, Enganação +5, Percepção +3",
+        "senses": "visão no escuro 18 m, Percepção passiva 13",
+        "languages": "Comum, Élfico, gíria dos ladrões",
+        "traits": [
+          { "name": "Pés de Marinheiro", "description": "Tem vantagem em testes para não cair ou escorregar em convés molhado ou instável." }
+        ],
+        "actions": [
+          { "name": "Ataques Múltiplos", "description": "Faz dois ataques de sabre e um de pistola.", "attackBonus": null, "damage": null },
+          { "name": "Sabre", "description": "Ataque corpo a corpo com arma, alcance 1,5 m, um alvo.", "attackBonus": 5, "damage": "1d6 + 3 de corte" },
+          { "name": "Pistola", "description": "Ataque à distância com arma, alcance 9/27 m, um alvo.", "attackBonus": 5, "damage": "1d10 + 3 de perfuração" }
+        ],
+        "reactions": [
+          { "name": "Aparar", "description": "Soma +2 à CA contra um ataque corpo a corpo que veria acertá-la, se estiver empunhando o sabre." }
+        ]
+      }
+    },
+    {
+      "campaign": "Contrabandistas de Porto Névoa",
+      "name": "Velho Sálvio",
+      "race": "humano",
+      "occupation": "faroleiro",
+      "appearance": "Barba branca até o peito, sempre de capa impermeável, mesmo nos dias de sol.",
+      "personality": "Rabugento e desconfiado, mas incapaz de deixar alguém se afogar.",
+      "background": "Cuida do farol há quarenta anos. Diz que conversa com as gaivotas, e talvez converse mesmo.",
+      "notes": "Apaga o farol nas noites em que o Garça Cinzenta chega, em troca de tabaco e notícias.",
+      "statBlock": null
+    },
+    {
+      "campaign": "Contrabandistas de Porto Névoa",
+      "name": "Coruja",
+      "race": "tiefling",
+      "occupation": "informante do porto",
+      "appearance": "Chifres pequenos escondidos sob um capuz cinza, olhos dourados que brilham no escuro.",
+      "personality": "Fala por enigmas e cobra por cada resposta; nunca mente, mas raramente diz tudo.",
+      "background": "Ninguém sabe o nome verdadeiro dela. Apareceu no porto há cinco anos e conhece todos os segredos dele.",
+      "notes": "Trabalha em segredo para o governador e para os contrabandistas ao mesmo tempo.",
+      "statBlock": {
+        "size": "Medium",
+        "creatureType": "humanoide (tiefling)",
+        "alignment": "neutro",
+        "armorClass": 14,
+        "hitPoints": 27,
+        "hitDice": "6d8",
+        "speed": "9 m",
+        "str": 9, "dex": 16, "con": 11, "int": 14, "wis": 13, "cha": 15,
+        "challengeRating": "1",
+        "savingThrows": null,
+        "skills": "Furtividade +5, Intuição +3, Persuasão +4",
+        "senses": "visão no escuro 18 m, Percepção passiva 11",
+        "languages": "Comum, Infernal, gíria dos ladrões",
+        "traits": [
+          { "name": "Ação Ardilosa", "description": "Pode usar uma ação bônus para Disparar, Desengajar ou Esconder-se." }
+        ],
+        "actions": [
+          { "name": "Adaga", "description": "Ataque corpo a corpo ou à distância com arma, alcance 1,5 m ou 6/18 m, um alvo.", "attackBonus": 5, "damage": "1d4 + 3 de perfuração" }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "campaign": null,
+      "name": "Irmã Benedita",
+      "race": "anã",
+      "occupation": "curandeira de estrada",
+      "appearance": "Hábito marrom remendado, mochila cheia de ervas, um martelo de guerra pendurado no cinto.",
+      "personality": "Gentil e teimosa; reza antes de cada cura e antes de cada briga.",
+      "background": "Deixou o templo da montanha para atender vilas que nenhum sacerdote visita.",
+      "notes": "Boa para ajudar o grupo entre aventuras. Pede em troca que escoltem doentes até a cidade.",
+      "statBlock": null
+    },
+    {
+      "campaign": null,
+      "name": "Lobo-da-Névoa",
+      "race": "lobo atroz",
+      "occupation": "fera que ronda a estrada",
+      "appearance": "Lobo enorme de pelo cinza-azulado, quase invisível na neblina da manhã.",
+      "personality": "Caça sozinho e evita grupos grandes; ataca viajantes isolados.",
+      "background": "Os moradores dizem que é o espírito de um caçador que traiu a própria aldeia.",
+      "notes": "Encontro aleatório na estrada para Porto Névoa. Foge quando cai abaixo da metade dos pontos de vida.",
+      "statBlock": {
+        "size": "Large",
+        "creatureType": "fera",
+        "alignment": "sem alinhamento",
+        "armorClass": 14,
+        "hitPoints": 37,
+        "hitDice": "5d10 + 10",
+        "speed": "15 m",
+        "str": 17, "dex": 15, "con": 15, "int": 3, "wis": 12, "cha": 7,
+        "challengeRating": "1",
+        "savingThrows": null,
+        "skills": "Furtividade +4, Percepção +3",
+        "senses": "Percepção passiva 13",
+        "languages": "—",
+        "traits": [
+          { "name": "Faro e Audição Aguçados", "description": "Tem vantagem em testes de Percepção que dependem de audição ou olfato." },
+          { "name": "Camuflagem na Névoa", "description": "Tem vantagem em testes de Furtividade feitos em neblina." }
+        ],
+        "actions": [
+          { "name": "Mordida", "description": "Ataque corpo a corpo com arma, alcance 1,5 m, um alvo. Se for uma criatura, ela faz um teste de Força CD 13 ou cai no chão.", "attackBonus": 5, "damage": "2d6 + 3 de perfuração" }
+        ],
+        "reactions": []
+      }
+    }
+  ]
+}
