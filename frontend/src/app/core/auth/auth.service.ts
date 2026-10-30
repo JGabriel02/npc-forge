@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, map, switchMap, tap } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginResponse, MeResponse } from '../api/api.models';
 
@@ -43,6 +43,21 @@ export class AuthService {
       tap((response) => this.saveSession(response)),
       switchMap(() => this.loadUser()),
       map(() => undefined),
+    );
+  }
+
+  /**
+   * Ao abrir o app com um token salvo: carrega o usuário. Só encerra a sessão se a API recusar o token
+   * (401); servidor acordando, fora do ar ou lento não desloga ninguém.
+   */
+  restoreSession(): Observable<void> {
+    if (!this.getToken()) return of(undefined);
+    return this.loadUser().pipe(
+      map(() => undefined),
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse && error.status === 401) this.expireSession();
+        return of(undefined);
+      }),
     );
   }
 
