@@ -95,7 +95,6 @@ jobs:
           action: upload
           app_location: web
           skip_app_build: true
-          skip_api_build: true
 
       # A API pode estar "dormindo": até 10 tentativas, 15 s entre elas.
       - name: Smoke test
