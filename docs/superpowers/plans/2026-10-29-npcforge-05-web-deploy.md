@@ -560,7 +560,7 @@ Esta task é feita **com o usuário**: criar recursos nas contas dele é ação 
   - importar um arquivo exportado da versão local;
   - recarregar `/npcs/<id>`;
   - entrar como visitante (8 NPCs, nenhum botão de escrita, Exportar funciona);
-  - 11 logins errados seguidos dão a mensagem de 429.
+  - 11 logins errados seguidos dão a mensagem de 429; repetir com um `X-Forwarded-For` forjado diferente a cada vez também dá 429 (confere que `ASPNETCORE_FORWARDEDHEADERS_ENABLED=false` está valendo).
   - Depois de 20 min sem uso, abrir o site: aparece o texto de carregamento ou o aviso de "acordando", e a página carrega.
 
 - [ ] **Step 5: README:**

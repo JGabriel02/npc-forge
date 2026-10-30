@@ -67,6 +67,8 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
 // Sem isto, todos teriam o IP do proxy (e dividiriam o mesmo limite de tentativas). Com o ForwardLimit
 // padrão (1), vale só o último IP da lista, que é o que o proxy acrescenta; valores que o próprio
 // cliente mandou à esquerda são ignorados.
+// Atenção: na Azure, defina ASPNETCORE_FORWARDEDHEADERS_ENABLED=false (ver docs/deploy.md). Se a variável
+// ficar true, o ASP.NET processa o cabeçalho uma segunda vez, e o IP forjado pelo cliente passa a valer.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
