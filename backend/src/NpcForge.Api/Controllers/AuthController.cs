@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using NpcForge.Api.Auth;
+using NpcForge.Api.RateLimiting;
 using NpcForge.Infrastructure.Identity;
 
 namespace NpcForge.Api.Controllers;
@@ -14,6 +16,7 @@ public class AuthController(UserManager<AppUser> users, JwtTokenService tokens) 
 {
     [AllowAnonymous]
     [HttpPost("register")]
+    [EnableRateLimiting(AuthRateLimit.Policy)]
     public async Task<ActionResult<MeResponse>> Register(RegisterRequest request)
     {
         var user = new AppUser { UserName = request.Email, Email = request.Email, DisplayName = request.DisplayName };
@@ -41,6 +44,7 @@ public class AuthController(UserManager<AppUser> users, JwtTokenService tokens) 
 
     [AllowAnonymous]
     [HttpPost("login")]
+    [EnableRateLimiting(AuthRateLimit.Policy)]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
         var user = await users.FindByEmailAsync(request.Email);
