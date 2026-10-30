@@ -113,6 +113,14 @@ A conta demo é criada no primeiro clique em **Entrar como visitante**, com o co
    Campanhas, NPCs e fichas da conta saem junto (exclusão em cascata).
 2. O próximo "Entrar como visitante" recria tudo.
 
+## Problemas que já aconteceram (e a solução)
+
+- **Cloud Shell na assinatura errada.** Com mais de uma assinatura, o Cloud Shell pode estar em outra, e aí "o grupo de recursos não existe". Antes de qualquer comando: `az account show --query name -o tsv`. Se não for a do NpcForge: `az account set --subscription "<nome>"`.
+- **"Subscription … doesn't exist" no `azure/login`.** O `AZURE_SUBSCRIPTION_ID` é de outra assinatura, ou o app não tem a função Colaborador no grupo `npcforge-rg`.
+- **AADSTS700213 ("No matching federated identity record").** O GitHub passou a mandar o assunto com os IDs da conta e do repositório: `repo:JGabriel02@122412157/npc-forge@1437560225:ref:refs/heads/main`. O cenário "GitHub Actions" do portal monta o formato antigo, sem os IDs. Crie a credencial com o cenário **Outro emissor** e esse assunto exato (ou pelo Cloud Shell, com `az ad app federated-credential create`).
+- **"The format of value 'token …' is invalid" no Static Web Apps.** O secret do token foi salvo com uma quebra de linha no final. Copie pelo botão de copiar do portal e confira que não sobra linha em branco.
+- **Migrations falhando no Neon.** A string copiada do Neon para .NET vem **entre aspas**. No secret e na Azure, ela vai sem as aspas e com o "Connection pooling" desligado (host sem `-pooler`).
+
 ## 9. O que esperar dos planos gratuitos
 
 - **App Service F1:** cerca de 60 minutos de CPU por dia. Sem "Always On": a API dorme quando fica parada, e a primeira visita pode levar até um minuto (o site mostra "Acordando o servidor…").

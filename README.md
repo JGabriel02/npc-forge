@@ -4,6 +4,8 @@ Aplicação web para mestres de RPG criarem e organizarem NPCs de D&D 5e, com ou
 
 > Projeto de portfólio e aprendizado em **.NET** e **Angular**.
 >
+> **Experimente:** https://calm-mushroom-02327b90f.5.azurestaticapps.net (clique em **Entrar como visitante** para ver NPCs de exemplo sem criar conta). Está num plano gratuito: se ninguém usou o site há um tempo, a primeira visita pode levar até um minuto para o servidor "acordar".
+>
 > A IA é **opcional** e vem **desligada**: sem ela, o app funciona normalmente com criação manual de NPCs (é assim que roda a versão web). Para gerar NPCs com IA no seu computador, siga [Rodando com IA localmente](#rodando-com-ia-localmente).
 
 ## Stack
@@ -171,6 +173,7 @@ Decisões e o design completo: [docs/superpowers/specs](docs/superpowers/specs/2
 2. ~~Frontend Angular (sem IA)~~
 3. ~~IA local (Ollama), com contador diário de gerações~~
    - ~~Exportar/importar NPCs em arquivo JSON (local → web)~~
+   - ~~Versão web no ar (Azure + Neon), com conta de visitante e deploy automático~~ ([como publicar](docs/deploy.md))
 4. Sugestões por campo ✨
 5. NPCs públicos
 6. Provedor de IA em nuvem, polimento e prints neste README
